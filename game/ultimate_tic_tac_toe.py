@@ -3,6 +3,7 @@ Class for handling any and all game logic for an Ultimate Tic Tac Toe game.
 """
 
 import datetime
+import copy
 
 
 class UltimateTicTacToe:
@@ -37,6 +38,8 @@ class UltimateTicTacToe:
     entire game.
     - check_for_tic_tac_toe(board: list) -> str: Check if there is a winner in
     the given board (3x3).
+    - copy() -> UltimateTicTacToe: Return a deep copy of the current game state
+    which is useful for minimax algorithms.
 
     """
 
@@ -340,6 +343,12 @@ class UltimateTicTacToe:
 
                 # Print with | at the start, between, and end of big boards
                 print('|' + '|'.join(row_output) + '|')
+
+    def copy(self):
+        """
+        Return a deep copy of the current game state.
+        """
+        return copy.deepcopy(self)
 
     def __str__(self):
         """

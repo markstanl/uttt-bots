@@ -9,7 +9,7 @@ class BotMatchup():
         self.bot2 = bot2
         self.num_games = num_games
         self.game_state = None
-        self.wins = (0, 0, 0)
+        self.wins = (0, 0, 0) # bot1 wins, bot2 wins, ties
         self.run_time = 0
 
     def run_simulations(self):
@@ -18,17 +18,17 @@ class BotMatchup():
             if i % 2 == 0:
                 winner = self.run_game(True)
                 if winner == 'X':
-                    self.wins = (self.wins[0] + 1, self.wins[1], self.wins[2])
+                    self.wins = (self.wins[0], self.wins[1]+1, self.wins[2])
                 elif winner == 'O':
-                    self.wins = (self.wins[0], self.wins[1] + 1, self.wins[2])
+                    self.wins = (self.wins[0]+1, self.wins[1], self.wins[2])
                 else:
                     self.wins = (self.wins[0], self.wins[1], self.wins[2] + 1)
             else:
                 winner = self.run_game(False)
                 if winner == 'X':
-                    self.wins = (self.wins[0], self.wins[1] + 1, self.wins[2])
+                    self.wins = (self.wins[0]+1, self.wins[1], self.wins[2])
                 elif winner == 'O':
-                    self.wins = (self.wins[0] + 1, self.wins[1], self.wins[2])
+                    self.wins = (self.wins[0], self.wins[1]+1, self.wins[2])
                 else:
                     self.wins = (self.wins[0], self.wins[1], self.wins[2] + 1)
 
@@ -40,6 +40,7 @@ class BotMatchup():
         else:
             game = BotGame(self.bot1, self.bot2)
         game.play()
+        print(game.get_results())
         return game.get_results()['winner']
 
     def __str__(self):
@@ -47,9 +48,10 @@ class BotMatchup():
 
 
 if __name__ == '__main__':
-    from bots.playable_bots.RandomBot import RandomBot
+    from bots.playable_bots.RandomBot.RandomBot import RandomBot
+    from bots.playable_bots.minimax_1.minimax_1 import MinimaxPowellMerrill
     bot1 = RandomBot()
-    bot2 = RandomBot()
-    matchup = BotMatchup(bot1, bot2, 100)
+    bot2 = MinimaxPowellMerrill()
+    matchup = BotMatchup(bot1, bot2, 10)
     matchup.run_simulations()
     print(matchup)

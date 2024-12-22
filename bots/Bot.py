@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, Tuple
+
 from game.ultimate_tic_tac_toe import UltimateTicTacToe
 
 
@@ -55,10 +56,16 @@ class GameState:
         return self.game.current_player
 
     def get_valid_moves(self):
-        return self.game.get_valid_moves(False)
+        return self.game.get_valid_moves(char_notation=False)
+
+    def make_move(self, row, col):
+        self.game.make_valid_move(row, col)
 
     def get_board(self):
         return self.game.board
+
+    def get_big_tiles(self):
+        return self.game.big_tiles
 
     def get_next_board_coordinates(self):
         return self.game.next_board_coordinates
@@ -68,3 +75,9 @@ class GameState:
 
     def is_game_over(self):
         return self.game.game_over
+
+    def copy(self):
+        return GameState(self.game.copy())
+
+    def __str__(self):
+        return str(self.game)

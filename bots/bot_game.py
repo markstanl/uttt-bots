@@ -1,5 +1,6 @@
 from bots.Bot import Bot, GameState
 from game.ultimate_tic_tac_toe import UltimateTicTacToe
+from bots.playable_bots.minimax_1.powell_merrill_eval import powell_merrill_evaluation
 
 
 class BotGame:
@@ -18,6 +19,7 @@ class BotGame:
         self.bot2 = bot2
         self.bot1.set_player('X')
         self.bot2.set_player('O')
+        print(f"X: {self.bot1.__name__()} | O: {self.bot2.__name__()}")
 
     def play(self):
         while not self.game.game_over:
@@ -39,6 +41,7 @@ class BotGame:
             results_dict['winner'] = f"{self.game.winner}"
         else:
             results_dict['winner'] = "-"
+        results_dict['winner_name'] = self.bot1.__name__() if self.game.winner == 'X' else self.bot2.__name__()
         results_dict['moves'] = self.game.made_moves
         results_dict['final_board'] = self.game.board
         results_dict['game'] = self.game
@@ -46,12 +49,13 @@ class BotGame:
 
 
 if __name__ == '__main__':
-    from bots.playable_bots.RandomBot import RandomBot
+    from bots.playable_bots.RandomBot.RandomBot import RandomBot
+    from bots.playable_bots.minimax_1.minimax_1 import MinimaxPowellMerrill
 
     bot1 = RandomBot()
-    bot2 = RandomBot()
+    bot2 = MinimaxPowellMerrill()
     game = BotGame(bot1, bot2)
     game.play()
     game.game.print_annotated_board()
     print(game.game.made_moves)
-    game.game.write_uttt_to_file('example.txt')
+    # game.game.write_uttt_to_file('example.txt')
