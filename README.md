@@ -6,6 +6,11 @@ used in chess. We will be able to parse these files, as well as check their vali
 python library or a terminal game that allows users to play UTTT against each other or against a bot via that command 
 line.
 
+## UTTT Game Handling
+Heavy inspiration for the game logic comes from python-chess, a python library that handles chess games, as well as 
+Sebastian Lague's Coding Adventure series on YouTube. You can read more about how exactly game logic is implemented in
+the respective readme files, as well as the files themselves.
+
 ## Bots
 The bots will be implemented in the `bots/playable_bots` folder. The bots will be implemented with multiple different 
 methods, documented within each bot's file. You can run simulations of the bots playing against each other using the 

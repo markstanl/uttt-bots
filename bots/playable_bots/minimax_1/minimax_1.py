@@ -1,4 +1,6 @@
 import random
+import cProfile
+import pstats
 from abc import ABC
 from typing import Tuple
 
@@ -10,6 +12,7 @@ class MinimaxPowellMerrill(Bot, ABC):
     def __init__(self):
         self.player = None
         self.game_state = None
+        self.evaluated_moves = 0
 
     def set_player(self, player: str) -> None:
         self.player = player
@@ -25,8 +28,13 @@ class MinimaxPowellMerrill(Bot, ABC):
         best_move = None
         best_score = float('-inf') if self.player == 'X' else float('inf')
 
+        # Profiling for pick_move
+        profiler = cProfile.Profile()
+        profiler.enable()
+
         for move in valid_moves:
-            new_gamestate = (self.game_state.copy())
+            self.evaluated_moves += 1
+            new_gamestate = self.game_state.copy()
             new_gamestate.make_move(move[0], move[1])
             score = self.minimax(new_gamestate, depth=3,
                                  maximizingPlayer=(self.player != 'X'))
@@ -38,10 +46,25 @@ class MinimaxPowellMerrill(Bot, ABC):
                 best_score = score
                 best_move = move
 
+        profiler.disable()
+
+        # Save profiling stats to a file
+        with open('pick_move_profile.txt', 'w') as f:
+            stats = pstats.Stats(profiler, stream=f)
+            stats.strip_dirs()
+            stats.sort_stats('cumulative')
+            stats.print_stats()
+
         print('move made:', best_move)
+        print('evaluated moves:', self.evaluated_moves)
+        self.evaluated_moves = 0
         return best_move
 
     def minimax(self, gamestate: GameState, depth: int, maximizingPlayer):
+
+        self.evaluated_moves += 1
+
+        # Do not enable profiling here to avoid conflict
         if depth == 0 or gamestate.is_game_over():
             return powell_merrill_evaluation(gamestate)
 
@@ -53,7 +76,6 @@ class MinimaxPowellMerrill(Bot, ABC):
                 eval = self.minimax(new_gamestate, depth - 1, False)
                 maxEval = max(maxEval, eval)
             return maxEval
-
         else:
             minEval = float('inf')
             for move in gamestate.get_valid_moves():
@@ -67,9 +89,17 @@ class MinimaxPowellMerrill(Bot, ABC):
         self.game_state = game_state
 
     def __name__(self):
-        return "Minimax Powell Merrill"
+        return "Minimax Powell Merrill Eval"
 
 
 if __name__ == '__main__':
-    from game.terminal_play import SingleplayerTerminalPlay
-    game = SingleplayerTerminalPlay(MinimaxPowellMerrill())
+    from bots.playable_bots.RandomBot.RandomBot import RandomBot
+    from bots.bot_game import BotGame
+
+    bot1 = RandomBot()
+    bot2 = MinimaxPowellMerrill()
+    game = BotGame(bot1, bot2)
+    game.play()
+    game.game.print_annotated_board()
+    print(game.game.made_moves)
+    game.game.write_uttt_to_file('example2.txt')
