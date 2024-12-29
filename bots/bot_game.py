@@ -53,7 +53,7 @@ if __name__ == '__main__':
     from bots.playable_bots.minimax_1.minimax_1 import MinimaxPowellMerrill
 
     bot1 = RandomBot()
-    bot2 = MinimaxPowellMerrill()
+    bot2 = RandomBot()
     game = BotGame(bot1, bot2)
     game.play()
     game.game.print_annotated_board()

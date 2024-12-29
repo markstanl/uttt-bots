@@ -2,7 +2,7 @@
 Much of this file is copied and altered from the `pythin-chess` library, which
 is licensed under the GNU License.
 """
-
+import dataclasses
 from enum import Enum, auto
 from typing import Optional, TypeAlias, List
 import re
@@ -48,7 +48,7 @@ class Move:
         """
         row = self.index // 9
         col = self.index % 9
-        return f"Player {self.player} to ({chr(col + ord('A'))}, {row+1})"
+        return f"Player {self.player} on index {self.index}, ({self.to_algebraic()})"
 
     def __repr__(self):
         """
@@ -57,7 +57,7 @@ class Move:
         Returns:
             str: Algebraic notation of the move.
         """
-        return self.to_algebraic()
+        return f"{self.to_algebraic()} {str(self.player)}"
 
     @classmethod
     def from_algebraic(cls, notation: str, player: Player):
@@ -80,27 +80,6 @@ class Move:
             raise ValueError("Invalid algebraic notation.")
 
         return cls(parse_square(notation), player)
-
-    @classmethod
-    def from_row_col(cls, row: int, col: int, player: Player):
-        """
-        Create a Move from row and column indices.
-
-        Args:
-            row (int): Row index (0-8).
-            col (int): Column index (0-8).
-            player (Player): The player making the move ('X' or 'O').
-
-        Returns:
-            Move: A new Move instance.
-        """
-        if player == Player.EMPTY:
-            raise ValueError("Player cannot be empty.")
-        if not 0 <= row < 9 or not 0 <= col < 9:
-            raise ValueError("Row and column indices must be between 0 and 8.")
-
-        index = row * 9 + col
-        return cls(index, player)
 
     @classmethod
     def from_bitboard(cls, binary_num, player: Player):
@@ -157,10 +136,15 @@ class Termination(Enum):
     TIC_TAC_TOE = auto()
     DRAW = auto()
 
-
+@dataclasses.dataclass
 class Outcome:
     termination: Termination
     winner: Optional[Player]
+
+    def result(self) -> str:
+        """Returns ``1-0``, ``0-1`` or ``1/2-1/2``."""
+        return "1/2-1/2" if self.winner is None else (
+            "1-0" if self.winner else "0-1")
 
 
 class InvalidMoveError(ValueError):
@@ -256,6 +240,18 @@ I9: Square = 80
 Squares: List[Square] = list(range(81))
 
 SQUARE_NAMES = [f + r for r in RANK_NAMES for f in FILE_NAMES]
+print(SQUARE_NAMES)
+
+WINNING_MASKS = [
+    0b000000111,  # Row 1
+    0b000111000,  # Row 2
+    0b111000000,  # Row 3
+    0b001001001,  # Column 1
+    0b010010010,  # Column 2
+    0b100100100,  # Column 3
+    0b100010001,  # Diagonal 1
+    0b001010100  # Diagonal 2
+]
 
 
 def parse_square(name: str) -> Square:
