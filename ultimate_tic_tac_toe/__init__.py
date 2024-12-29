@@ -36,6 +36,9 @@ class Move:
         if player == Player.EMPTY:
             raise ValueError("Player cannot be empty.")
 
+        if index < 0 or index > 80:
+            raise InvalidMoveError("Index must be between 0 and 80.")
+
         self.index = index
         self.player = player
 
@@ -72,12 +75,12 @@ class Move:
             Move: A new Move instance.
         """
         if player == Player.EMPTY:
-            raise ValueError("Player cannot be empty.")
+            raise InvalidMoveError("Player cannot be empty.")
 
         notation = notation.lower()
 
         if not re.match(r"^[a-i][1-9]$", notation):
-            raise ValueError("Invalid algebraic notation.")
+            raise InvalidMoveError("Invalid algebraic notation. Must be in the form 'a1', where a is a letter from a-i and 1 is a number from 1-9.")
 
         return cls(parse_square(notation), player)
 
@@ -94,7 +97,11 @@ class Move:
             Move: A new Move instance.
         """
         if player == Player.EMPTY:
-            raise ValueError("Player cannot be empty.")
+            raise InvalidMoveError("Player cannot be empty.")
+
+        valid_nums = [1 << i for i in range(81)]
+        if binary_num not in valid_nums:
+            raise InvalidMoveError("Invalid bitboard index. Must be between 0 and 80.")
 
         return cls((binary_num & -binary_num).bit_length() - 1, player)
 

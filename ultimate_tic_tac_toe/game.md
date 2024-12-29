@@ -41,11 +41,11 @@ index = binary_value.bit_length() - 1
 ```
 `Index to Next Big Tile Index`
 ```Python
-big_tile_index = index % 3 + 3 * (index // 9 % 3) 
+next_big_tile_index = index % 3 + 3 * (index // 9 % 3) 
 ```
 `Index to Current Big Tile Index`
 ```Python
-big_tile_index = index // 27 * 3 + index % 9 // 3
+current_big_tile_index = index // 27 * 3 + index % 9 // 3
 ```
 
 ## Pythonic Play

@@ -40,7 +40,6 @@ class BotUltimateTicTacToe:
         self.current_player = Player.X
 
         # Metadata, for writing to UTTT
-        self.valid_moves = []
         self.event = event
         self.site = site
         self.date = date
@@ -53,9 +52,17 @@ class BotUltimateTicTacToe:
         self.outcome = None
 
     def push(self, move: Move):
+        if not isinstance(move, Move):
+            raise InvalidMoveError(
+                "Move must be an instance of the Move class.")
+
         # check for validity of move
         if not self.is_legal(move):
-            raise IllegalMoveError(f"{move.__repr__()} is an llegal move. Current legal moves are: {str(self.valid_moves)}")
+            if self.outcome is not None:
+                raise IllegalMoveError(
+                    f"Game is over. {self.outcome.result()}")
+            raise IllegalMoveError(
+                f"{move.__repr__()} is an llegal move. Current legal moves are: {str(generate_legal_moves(self.bitboard, self.big_bitboard, self.next_board_index, self.current_player))}")
 
         if move.player != self.current_player:
             raise IllegalMoveError("Wrong player.")
@@ -69,7 +76,9 @@ class BotUltimateTicTacToe:
 
         # Update the big board bitboard
         big_tile_index = move.index // 27 * 3 + move.index % 9 // 3
-        if self.check_small_tic_tac_toe(self.bitboard, move.index // 27 * 3 + move.index % 9 // 3):
+        current_player_bitboard = self.x_bitboard if move.player == Player.X else self.o_bitboard
+        if self.check_small_tic_tac_toe(current_player_bitboard,
+                                        move.index // 27 * 3 + move.index % 9 // 3):
             # only need to check the tile the move was made in
             self.big_bitboard |= 1 << big_tile_index
             if move.player == Player.X:
@@ -85,6 +94,9 @@ class BotUltimateTicTacToe:
         # update game information
         self.next_board_index = 1 << (
                 move.index % 3 + 3 * (move.index // 9 % 3))
+        if self.next_board_index & self.big_bitboard:
+            self.next_board_index = 0
+
         self.current_player = Player.O if self.current_player == Player.X else Player.X
         self.made_moves.append(move)
 
@@ -102,7 +114,7 @@ class BotUltimateTicTacToe:
         # pop the move from the list
         move = self.made_moves.pop()
 
-        if self.outcome.termination == Termination.TIC_TAC_TOE:
+        if self.outcome and self.outcome.termination == Termination.TIC_TAC_TOE:
             self.outcome = None
 
         # Update the small bitboards
@@ -114,15 +126,11 @@ class BotUltimateTicTacToe:
 
         # Update the big board
         old_tile_index = move.index // 27 * 3 + move.index % 9 // 3
-        self.big_bitboard &= ~(1 << move.index)
-        if not self.check_small_tic_tac_toe(self.bitboard, old_tile_index):
-            # if there isn't a ttt in small board, update the big board
-            # boolean check may be unnecessary, consider this when refactoring
-            self.big_bitboard &= ~(1 << old_tile_index)
-            if move.player == Player.X:
-                self.x_big_bitboard &= ~(1 << old_tile_index)
-            else:
-                self.o_big_bitboard &= ~(1 << old_tile_index)
+        self.big_bitboard &= ~(1 << old_tile_index)
+        if move.player == Player.X:
+            self.x_big_bitboard &= ~(1 << old_tile_index)
+        else:
+            self.o_big_bitboard &= ~(1 << old_tile_index)
 
         # Update game information
         last_move = self.made_moves[-1] if self.made_moves else None
@@ -144,7 +152,8 @@ class BotUltimateTicTacToe:
         """
         return any((bitboard & mask) == mask for mask in WINNING_MASKS)
 
-    def check_small_tic_tac_toe(self, bitboard: int, small_board_index: int) -> bool:
+    def check_small_tic_tac_toe(self, bitboard: int,
+                                small_board_index: int) -> bool:
         """
         Check for a Tic Tac Toe win in a specific small board.
 
@@ -156,7 +165,7 @@ class BotUltimateTicTacToe:
             bool: True if there's a Tic Tac Toe, False otherwise.
         """
         # Compute row and column offsets for the small board
-        row_offset = ( small_board_index // 3) * 3
+        row_offset = (small_board_index // 3) * 3
         col_offset = (small_board_index % 3) * 3
 
         # creates a new 3x3 small board
@@ -181,14 +190,30 @@ class BotUltimateTicTacToe:
         if self.outcome is not None:
             return False
 
-        self.valid_moves = generate_legal_moves(self.bitboard,
-                                                self.big_bitboard,
-                                                self.next_board_index,
-                                                self.current_player)
-        return move in self.valid_moves
+        current_big_tile_index = move.index // 27 * 3 + move.index % 9 // 3
+        if self.next_board_index and not (
+                self.next_board_index & (1 << current_big_tile_index)):
+            return False
+
+        return not (self.bitboard & (1 << move.index))
 
     def outcome(self) -> Optional[Outcome]:
-        pass
+        return self.outcome
+
+    def is_game_over(self) -> bool:
+        """
+        Check if the game is over.
+
+        Returns:
+            bool: True if the game is over, False otherwise.
+        """
+        return self.outcome is not None
+
+    def get_valid_moves(self):
+        return generate_legal_moves(self.bitboard,
+                                    self.big_bitboard,
+                                    self.next_board_index,
+                                    self.current_player)
 
     def __str__(self):
         """
@@ -226,6 +251,48 @@ class BotUltimateTicTacToe:
                 ["".join(board[i][j:j + 3]) for j in range(0, 9, 3)]) + "\n"
 
         return result.strip()
+
+    def __copy__(self):
+        new_board = BotUltimateTicTacToe(
+            event=self.event,
+            site=self.site,
+            date=self.date,
+            round=self.round,
+            x_player=self.x_player,
+            o_player=self.o_player,
+            annotator=self.annotator,
+            time=self.time,
+            time_control=self.time_control,
+        )
+
+        new_board.bitboard = self.bitboard
+        new_board.x_bitboard = self.x_bitboard
+        new_board.o_bitboard = self.o_bitboard
+        new_board.big_bitboard = self.big_bitboard
+        new_board.x_big_bitboard = self.x_big_bitboard
+        new_board.o_big_bitboard = self.o_big_bitboard
+        new_board.next_board_index = self.next_board_index
+        new_board.made_moves = list(self.made_moves)
+        new_board.current_player = self.current_player
+        new_board.outcome = self.outcome.copy() if self.outcome else None
+        return new_board
+
+    def __eq__(self, other):
+        if not isinstance(other, BotUltimateTicTacToe):
+            return False
+
+        attributes = [
+            'bitboard', 'x_bitboard', 'o_bitboard', 'big_bitboard',
+            'x_big_bitboard', 'o_big_bitboard', 'next_board_index',
+            'made_moves', 'current_player', 'outcome'
+        ]
+
+        for attr in attributes:
+            if getattr(self, attr) != getattr(other, attr):
+                print(f"Attribute {attr} is not equal.")
+                return False
+
+        return True
 
 
 if __name__ == '__main__':
