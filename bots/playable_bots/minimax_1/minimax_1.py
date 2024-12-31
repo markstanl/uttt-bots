@@ -4,7 +4,7 @@ import pstats
 from abc import ABC
 from typing import Tuple
 
-from bots.Bot import Bot, GameState
+from bots.__init__ import Bot, GameState
 from bots.playable_bots.minimax_1.powell_merrill_eval import powell_merrill_evaluation
 
 
@@ -24,7 +24,7 @@ class MinimaxPowellMerrill(Bot, ABC):
         if self.game_state.get_current_player() != self.player:
             raise ValueError('Not the bot\'s turn')
 
-        valid_moves = self.game_state.get_valid_moves()
+        valid_moves = self.game_state.get_legal_moves()
         best_move = None
         best_score = float('-inf') if self.player == 'X' else float('inf')
 
@@ -93,7 +93,7 @@ class MinimaxPowellMerrill(Bot, ABC):
 
 
 if __name__ == '__main__':
-    from bots.playable_bots.RandomBot.RandomBot import RandomBot
+    from bots.playable_bots.random_bot.random_bot import RandomBot
     from bots.bot_game import BotGame
 
     bot1 = RandomBot()

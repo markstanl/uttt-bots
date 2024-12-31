@@ -22,7 +22,7 @@ class UltimateTicTacToe:
     - resign(player: str) -> None: Resign the game.
     - parse_move(move: str) -> (int, int): Parse a move from algebraic notation
     to row, col.
-    - get_valid_moves(char_notation=False) -> list: Get the valid moves for the
+    - get_legal_moves(char_notation=False) -> list: Get the valid moves for the
     current player.
     - print_annotated_board() -> None: Print a prettier version of the board.
 

@@ -1,61 +1,45 @@
-from bots.Bot import Bot, GameState
-from game.ultimate_tic_tac_toe import UltimateTicTacToe
-from bots.playable_bots.minimax_1.powell_merrill_eval import powell_merrill_evaluation
+from ultimate_tic_tac_toe.game import Game
+from ultimate_tic_tac_toe import Move, Player, Outcome
+from bots import Bot, GameState
 
 
 class BotGame:
     def __init__(self, bot1: Bot, bot2: Bot):
         """
-        Initialize the game with two playable_bots.
-        :param bot1: plays as X
-        :param bot2: plays as Y
+        Initializes a BotGame instance with two bots.
+        Args:
+            bot1: First Bot, playing as X
+            bot2: Second Bot, playing as O
         """
-        self.game = UltimateTicTacToe(event="Bot Game",
-                                      x_player=bot1.__name__(),
-                                      o_player=bot2.__name__())
-        self.player = 'X'
-        self.current_player = 'X'
         self.bot1 = bot1
+        self.bot1.set_player(Player.X)
         self.bot2 = bot2
-        self.bot1.set_player('X')
-        self.bot2.set_player('O')
-        print(f"X: {self.bot1.__name__()} | O: {self.bot2.__name__()}")
+        self.bot2.set_player(Player.O)
+        self.game = Game(event="Bot Game",
+                         x_player=bot1.__name__(),
+                         o_player=bot2.__name__())
 
-    def play(self):
-        while not self.game.game_over:
-            if self.game.current_player == 'X':
+    def play(self) -> Outcome:
+        while True:
+            if self.game.current_player == Player.X:
                 self.bot1.update(GameState(self.game))
-                row, col = self.bot1.pick_move()
+                move = self.bot1.pick_move()
             else:
                 self.bot2.update(GameState(self.game))
-                row, col = self.bot2.pick_move()
+                move = self.bot2.pick_move()
 
-            self.game.make_valid_move(row, col)
+            self.game.push(move)
+            if self.game.outcome is not None:
+                return self.game.outcome
 
-    def get_results(self) -> dict:
-        results_dict = {}
-        if not self.game.game_over:
-            raise ValueError('Game is not over yet')
-
-        if self.game.check_global_tic_tac_toe():
-            results_dict['winner'] = f"{self.game.winner}"
-        else:
-            results_dict['winner'] = "-"
-        results_dict['winner_name'] = self.bot1.__name__() if self.game.winner == 'X' else self.bot2.__name__()
-        results_dict['moves'] = self.game.made_moves
-        results_dict['final_board'] = self.game.board
-        results_dict['game'] = self.game
-        return results_dict
+    def get_outcome(self) -> Outcome:
+        return self.game.outcome
 
 
 if __name__ == '__main__':
-    from bots.playable_bots.RandomBot.RandomBot import RandomBot
-    from bots.playable_bots.minimax_1.minimax_1 import MinimaxPowellMerrill
-
-    bot1 = RandomBot()
-    bot2 = RandomBot()
-    game = BotGame(bot1, bot2)
-    game.play()
-    game.game.print_annotated_board()
-    print(game.game.made_moves)
-    # game.game.write_uttt_to_file('example.txt')
+    from bots.playable_bots.random_bot import RandomBot
+    bot1 = RandomBot(player_name="Random Bot 1")
+    bot2 = RandomBot(player_name="Random Bot 2")
+    bot_game = BotGame(bot1, bot2)
+    outcome = bot_game.play()
+    print(outcome)

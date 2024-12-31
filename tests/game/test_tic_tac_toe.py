@@ -1,10 +1,10 @@
 import pytest
-from ultimate_tic_tac_toe.bot_ultimate_tic_tac_toe import BotUltimateTicTacToe
+from ultimate_tic_tac_toe.game import Game
 
 
 class TestTicTacToe:
     def setup_method(self):
-        self.bot = BotUltimateTicTacToe()
+        self.bot = Game()
 
     def test_tic_tac_toe(self):
         """The following board is being tested:

@@ -1,4 +1,4 @@
-from ultimate_tic_tac_toe.bot_ultimate_tic_tac_toe import BotUltimateTicTacToe
+from ultimate_tic_tac_toe.game import Game
 from ultimate_tic_tac_toe import Player, Move
 import cProfile
 import pstats
@@ -24,7 +24,7 @@ class UpdatedSpeed:
         Runs the updated speed test using BotUltimateTicTacToe.
         """
         for _ in range(self.num_games):
-            game = BotUltimateTicTacToe()
+            game = Game()
             x_turn = True
             for move in self.generated_move_order:
                 parsed_move = Move.from_algebraic(move, Player.X if x_turn else Player.O)

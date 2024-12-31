@@ -247,7 +247,6 @@ I9: Square = 80
 Squares: List[Square] = list(range(81))
 
 SQUARE_NAMES = [f + r for r in RANK_NAMES for f in FILE_NAMES]
-print(SQUARE_NAMES)
 
 WINNING_MASKS = [
     0b000000111,  # Row 1

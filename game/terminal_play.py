@@ -1,6 +1,6 @@
 from game.ultimate_tic_tac_toe import UltimateTicTacToe
-from bots.Bot import Bot, GameState
-from bots.playable_bots.RandomBot import RandomBot
+from bots.__init__ import Bot, GameState
+from bots.playable_bots.random_bot import RandomBot
 
 
 class MultiplayerTerminalPlay:

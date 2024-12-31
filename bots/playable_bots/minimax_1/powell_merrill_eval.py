@@ -1,96 +1,71 @@
-from bots.Bot import GameState
+from bots import GameState, Evaluation
+from ultimate_tic_tac_toe import Player
 
+class PowellMerrillEval(Evaluation):
+    def evaluation(self, game_state: GameState) -> float:
+        """
+        Evaluates the current game state for the player.
+        The evaluation function is based on the Powell-Merrill heuristic.
+        """
+        if game_state.is_game_over():
+            if game_state.get_outcome().winner == Player.X:
+                return float('inf')
+            elif game_state.get_outcome().winner is None:
+                return 0
+            else:
+                return float('-inf')
 
-def powell_merrill_evaluation(game_state: GameState) -> int:
-    winner_evals = {'X': 10000, 'O': -10000, '-': 0}
-    if game_state.is_game_over():
-        return winner_evals[game_state.get_winner()]
+        x_big_bitboard = game_state.get_x_big_bitboard()
+        o_big_bitboard = game_state.get_o_big_bitboard()
+        big_bitboard = x_big_bitboard | o_big_bitboard
+        x_bitboard = game_state.get_x_bitboard()
+        o_bitboard = game_state.get_o_bitboard()
+        bitboard = x_bitboard | o_bitboard
 
-    score = 0
-    current_board = game_state.get_board()
-    big_tiles = game_state.get_big_tiles()
+        current_score = 0
 
-    # handles big tile evaluation
-    for i, big_row in enumerate(big_tiles):
-        for j, big_tile in enumerate(big_row):
-            if big_tile == '_':
-                continue
-            modifier = 1 if big_tile == 'X' else -1
-            score += modifier * 100
-            score += modifier * 100 * check_close_tiles(current_board, i, j,
-                                                        big_tile)
-            score += modifier * 150 * check_for_blocking(current_board, i, j,
-                                                         big_tile)
+        current_score += 100 * bin(game_state.get_x_big_bitboard()).count('1')
+        current_score -= 100 * bin(game_state.get_o_big_bitboard()).count('1')
 
-    # handles small tile evaluation
-    for i, row in enumerate(current_board):
-        for j, tile in enumerate(row):
-            if tile == '_':
-                continue
-            small_board = [current_board[r][(j // 3) * 3:(j // 3) * 3 + 3] for
-                           r in range((i // 3) * 3, (i // 3) * 3 + 3)]
-            # calculates the small board (3x3 grid from big tile)
-            modifier = 1 if tile == 'X' else -1
-            score += modifier * 2 * check_close_tiles(small_board, i % 3,
-                                                      j % 3, tile)
-            score += modifier * 20 * check_for_blocking(small_board, i % 3,
-                                                        j % 3, tile)
+        current_score += 150 * self.check_block(big_bitboard, x_bitboard, o_bitboard, Player.X)
+        current_score -= 150 * self.check_block(big_bitboard, x_bitboard, o_bitboard, Player.O)
 
-    return score
+        for i in range(9):
+            pass
 
+        return current_score
 
-def check_for_blocking(board: list, row: int, col: int, player: str) -> int:
-    count = check_row_blocking(board, row, col, player)
-    count += check_column_blocking(board, row, col, player)
-    if row == col:
-        count += check_left_diagonal_blocking(board, row, col, player)
-    if row + col == 2:
-        count += check_right_diagonal_blocking(board, row, col, player)
-    return count
+    def check_block(self, bitboard: int, x_bitboard: int, o_bitboard: int, player: Player) -> int:
+        """
+        Check's if the player has blocked the opponent from winning.
+        Args:
+            bitboard: The 3x3 small or big board to check
+            player: The player to check for
 
+        Returns:
+            int: The number of blocks
+        """
+        return 0
 
-def check_row_blocking(board: list, row: int, col: int, player: str) -> int:
-    return 1 if all(board[row][c] != player or c == col for c in range(3)) else 0
+    def generate_small_board(self, bitboard: int,
+                             small_board_index: int) -> int:
+        """
+        Generate a 3x3 small board from the 81-bit board and index of small board
+        Args:
+            bitboard: The 81-bit number representing a player's board.
+            small_board_index: Index (0-8) of the small 3x3 board to generate.
 
+        Returns:
+            int: The 3x3 small board.
+        """
+        # Compute row and column offsets for the small board
+        row_offset = (small_board_index // 3) * 3
+        col_offset = (small_board_index % 3) * 3
 
-def check_column_blocking(board: list, row: int, col: int, player: str) -> int:
-    return 1 if all(board[r][col] != player or r == row for r in range(3)) else 0
-
-
-def check_left_diagonal_blocking(board: list, row: int, col: int,
-                                 player: str) -> int:
-    return 1 if all(
-        board[i][i] != player or (i == row and i == col) for i in range(3)) else 0
-
-
-def check_right_diagonal_blocking(board: list, row: int, col: int,
-                                  player: str) -> int:
-    return 1 if all(
-        board[i][2 - i] != player or (i == row and 2 - i == col) for i in
-        range(3)) else 0
-
-
-def check_close_tiles(board: list, row: int, col: int, player: str) -> int:
-    return (check_row(board, row, col, player) +
-            check_column(board, row, col, player) +
-            check_left_diagonal(board, row, col, player) +
-            check_right_diagonal(board, row, col, player))
-
-
-def check_row(board: list, row: int, col: int, player: str) -> int:
-    return 1 if any(board[row][c] == player and c != col for c in range(3)) else 0
-
-
-def check_column(board: list, row: int, col: int, player: str) -> int:
-    return 1 if any(board[r][col] == player and r != row for r in range(3)) else 0
-
-
-def check_left_diagonal(board: list, row: int, col: int, player: str) -> int:
-    return 1 if any(
-        board[i][i] == player and (i != row or i != col) for i in range(3)) else 0
-
-
-def check_right_diagonal(board: list, row: int, col: int, player: str) -> int:
-    return 1 if any(
-        board[i][2 - i] == player and (i != row or 2 - i != col) for i in
-        range(3)) else 0
+        # creates a new 3x3 small board
+        small_board = 0
+        for row in range(3):
+            for col in range(3):
+                bit_index = (row_offset + row) * 9 + (col_offset + col)
+                small_board |= ((bitboard >> bit_index) & 1) << (row * 3 + col)
+        return small_board

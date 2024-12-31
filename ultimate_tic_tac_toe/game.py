@@ -2,15 +2,15 @@
 Class for handling any and all game logic for an Ultimate Tic Tac Toe game,
 optimized for use in a bot environment.
 """
-from typing import Optional
 import datetime
+from typing import Optional
 
 from ultimate_tic_tac_toe import Player, Move, Outcome, InvalidMoveError, \
     IllegalMoveError, WINNING_MASKS, Termination
 from ultimate_tic_tac_toe.move_generator import generate_legal_moves
 
 
-class BotUltimateTicTacToe:
+class Game:
     def __init__(self, event="Python UTTT",
                  site="N/A",
                  date=datetime.date.today(),
@@ -77,19 +77,33 @@ class BotUltimateTicTacToe:
         # Update the big board bitboard
         big_tile_index = move.index // 27 * 3 + move.index % 9 // 3
         current_player_bitboard = self.x_bitboard if move.player == Player.X else self.o_bitboard
-        if self.check_small_tic_tac_toe(current_player_bitboard,
-                                        move.index // 27 * 3 + move.index % 9 // 3):
+        current_player_small_board = self.generate_small_board(
+            current_player_bitboard, big_tile_index)
+
+        if self.check_small_tic_tac_toe(current_player_small_board):
             # only need to check the tile the move was made in
             self.big_bitboard |= 1 << big_tile_index
             if move.player == Player.X:
                 self.x_big_bitboard |= 1 << big_tile_index
                 if self.check_tic_tac_toe(self.x_big_bitboard):
                     self.outcome = Outcome(Termination.TIC_TAC_TOE, Player.X)
+                elif self.check_bitboard_is_full(self.big_bitboard):
+                    self.outcome = Outcome(Termination.DRAW, None)
 
             else:
                 self.o_big_bitboard |= 1 << big_tile_index
                 if self.check_tic_tac_toe(self.o_big_bitboard):
                     self.outcome = Outcome(Termination.TIC_TAC_TOE, Player.O)
+                elif self.check_bitboard_is_full(self.big_bitboard):
+                    self.outcome = Outcome(Termination.DRAW, None)
+
+        elif self.check_bitboard_is_full(
+                self.generate_small_board(self.bitboard, big_tile_index)):
+            # if the small board is full, update big bitboard so no nums
+            # can be played in that tile
+            self.big_bitboard |= 1 << big_tile_index
+            if self.check_bitboard_is_full(self.big_bitboard):
+                self.outcome = Outcome(Termination.DRAW, None)
 
         # update game information
         self.next_board_index = 1 << (
@@ -114,7 +128,7 @@ class BotUltimateTicTacToe:
         # pop the move from the list
         move = self.made_moves.pop()
 
-        if self.outcome and self.outcome.termination == Termination.TIC_TAC_TOE:
+        if self.outcome:
             self.outcome = None
 
         # Update the small bitboards
@@ -152,17 +166,16 @@ class BotUltimateTicTacToe:
         """
         return any((bitboard & mask) == mask for mask in WINNING_MASKS)
 
-    def check_small_tic_tac_toe(self, bitboard: int,
-                                small_board_index: int) -> bool:
+    def generate_small_board(self, bitboard: int,
+                             small_board_index: int) -> int:
         """
-        Check for a Tic Tac Toe win in a specific small board.
-
+        Generate a 3x3 small board from the 81-bit board and index of small board
         Args:
-            bitboard (int): The 81-bit number representing a player's board.
-            small_board_index (int): Index (0-8) of the small 3x3 board to check.
+            bitboard: The 81-bit number representing a player's board.
+            small_board_index: Index (0-8) of the small 3x3 board to generate.
 
         Returns:
-            bool: True if there's a Tic Tac Toe, False otherwise.
+            int: The 3x3 small board.
         """
         # Compute row and column offsets for the small board
         row_offset = (small_board_index // 3) * 3
@@ -174,8 +187,31 @@ class BotUltimateTicTacToe:
             for col in range(3):
                 bit_index = (row_offset + row) * 9 + (col_offset + col)
                 small_board |= ((bitboard >> bit_index) & 1) << (row * 3 + col)
+        return small_board
 
+    def check_small_tic_tac_toe(self, small_board: int) -> bool:
+        """
+        Check for a Tic Tac Toe win in a specific small board.
+
+        Args:
+            small_board (int): The 3x3 small board to check.
+
+        Returns:
+            bool: True if there's a Tic Tac Toe, False otherwise.
+        """
         return self.check_tic_tac_toe(small_board)
+
+    def check_bitboard_is_full(self, bitboard: int) -> bool:
+        """
+        Check if a small board is full.
+
+        Args:
+            bitboard (int): The small board to check if is full.
+
+        Returns:
+            bool: True if the small board is full, False otherwise.
+        """
+        return bitboard == 0b111_111_111
 
     def is_legal(self, move: Move) -> bool:
         """
@@ -209,7 +245,7 @@ class BotUltimateTicTacToe:
         """
         return self.outcome is not None
 
-    def get_valid_moves(self):
+    def get_legal_moves(self):
         return generate_legal_moves(self.bitboard,
                                     self.big_bitboard,
                                     self.next_board_index,
@@ -253,7 +289,7 @@ class BotUltimateTicTacToe:
         return result.strip()
 
     def __copy__(self):
-        new_board = BotUltimateTicTacToe(
+        new_board = Game(
             event=self.event,
             site=self.site,
             date=self.date,
@@ -278,7 +314,7 @@ class BotUltimateTicTacToe:
         return new_board
 
     def __eq__(self, other):
-        if not isinstance(other, BotUltimateTicTacToe):
+        if not isinstance(other, Game):
             return False
 
         attributes = [
@@ -289,7 +325,6 @@ class BotUltimateTicTacToe:
 
         for attr in attributes:
             if getattr(self, attr) != getattr(other, attr):
-                print(f"Attribute {attr} is not equal.")
                 return False
 
         return True
@@ -300,7 +335,7 @@ if __name__ == '__main__':
     move_2 = Move.from_algebraic("B2", Player.O)
     move_3 = Move.from_algebraic("D4", Player.X)
 
-    game = BotUltimateTicTacToe()
+    game = Game()
     game.push(move_1)
     print(game.bitboard)
     print(game)
