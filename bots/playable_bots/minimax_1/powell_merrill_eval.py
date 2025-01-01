@@ -1,5 +1,6 @@
 from bots import GameState, Evaluation
-from ultimate_tic_tac_toe import Player
+from ultimate_tic_tac_toe import Player, WINNING_MASKS
+
 
 class PowellMerrillEval(Evaluation):
     def evaluation(self, game_state: GameState) -> float:
@@ -31,9 +32,61 @@ class PowellMerrillEval(Evaluation):
         current_score -= 150 * self.check_block(big_bitboard, x_bitboard, o_bitboard, Player.O)
 
         for i in range(9):
-            pass
+            # skip already won boards
+            if (big_bitboard >> i) & 1:
+                continue
+
+            small_board = self.generate_small_board(bitboard, i)
+            x_small_bitboard = small_board & x_bitboard
+            o_small_bitboard = small_board & o_bitboard
+
+            # check small blocks
+            current_score += 20 * self.check_block(small_board,
+                                                   x_small_bitboard,
+                                                   o_small_bitboard, Player.X)
+            current_score -= 20 * self.check_block(small_board,
+                                                   x_small_bitboard,
+                                                   o_small_bitboard, Player.O)
+
+            # check two in a rows.
+            current_score += 5 * self.check_two_in_a_row(small_board,
+                                                         x_small_bitboard,
+                                                         o_small_bitboard,
+                                                         Player.X)
+            current_score -= 5 * self.check_two_in_a_row(small_board,
+                                                         x_small_bitboard,
+                                                         o_small_bitboard,
+                                                         Player.O)
 
         return current_score
+
+    # TODO: Combine these two functions into one
+    def check_two_in_a_row(self, bitboard: int, x_bitboard: int,
+                           o_bitboard: int, player: Player) -> int:
+        """
+        Check's if the player has two in a row.
+        Args:
+            bitboard: The 3x3 small or big board to check
+            player: The player to check for
+
+        Returns:
+            int: The number of two in a rows
+        """
+        winning_masks = WINNING_MASKS
+        two_in_a_row_count = 0
+        if player == Player.X:
+            # check how many winning masks X has two in a row
+            for mask in winning_masks:
+                if bin(x_bitboard & mask).count('1') == 2 and bin(
+                        o_bitboard & mask).count('1') == 0:
+                    two_in_a_row_count += 1
+        else:
+            # check how many winning masks O has two in a row
+            for mask in winning_masks:
+                if bin(o_bitboard & mask).count('1') == 2 and bin(
+                        x_bitboard & mask).count('1') == 0:
+                    two_in_a_row_count += 1
+        return two_in_a_row_count
 
     def check_block(self, bitboard: int, x_bitboard: int, o_bitboard: int, player: Player) -> int:
         """
@@ -45,7 +98,21 @@ class PowellMerrillEval(Evaluation):
         Returns:
             int: The number of blocks
         """
-        return 0
+        winning_masks = WINNING_MASKS
+        block_count = 0
+        if player == Player.X:
+            # check how many winning masks X blocks
+            for mask in winning_masks:
+                if bin(o_bitboard & mask).count('1') == 2 and bin(
+                        x_bitboard & mask).count('1') == 1:
+                    block_count += 1
+        else:
+            # check how many winning masks O blocks
+            for mask in winning_masks:
+                if bin(x_bitboard & mask).count('1') == 2 and bin(
+                        o_bitboard & mask).count('1') == 1:
+                    block_count += 1
+        return block_count
 
     def generate_small_board(self, bitboard: int,
                              small_board_index: int) -> int:

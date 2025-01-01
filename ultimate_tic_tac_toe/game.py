@@ -6,7 +6,8 @@ import datetime
 from typing import Optional
 
 from ultimate_tic_tac_toe import Player, Move, Outcome, InvalidMoveError, \
-    IllegalMoveError, WINNING_MASKS, Termination
+    IllegalMoveError, WINNING_MASKS, SMALL_BITBOARD_WINNING_MASKS, \
+    SMALL_BITBOARD_FULL_TILE_MASK, Termination
 from ultimate_tic_tac_toe.move_generator import generate_legal_moves
 
 
@@ -77,10 +78,9 @@ class Game:
         # Update the big board bitboard
         big_tile_index = move.index // 27 * 3 + move.index % 9 // 3
         current_player_bitboard = self.x_bitboard if move.player == Player.X else self.o_bitboard
-        current_player_small_board = self.generate_small_board(
-            current_player_bitboard, big_tile_index)
 
-        if self.check_small_tic_tac_toe(current_player_small_board):
+        if self.check_small_tic_tac_toe(current_player_bitboard,
+                                        big_tile_index):
             # only need to check the tile the move was made in
             self.big_bitboard |= 1 << big_tile_index
             if move.player == Player.X:
@@ -97,8 +97,7 @@ class Game:
                 elif self.check_bitboard_is_full(self.big_bitboard):
                     self.outcome = Outcome(Termination.DRAW, None)
 
-        elif self.check_bitboard_is_full(
-                self.generate_small_board(self.bitboard, big_tile_index)):
+        elif self.check_small_bitboard_is_full(self.bitboard, big_tile_index):
             # if the small board is full, update big bitboard so no nums
             # can be played in that tile
             self.big_bitboard |= 1 << big_tile_index
@@ -189,29 +188,51 @@ class Game:
                 small_board |= ((bitboard >> bit_index) & 1) << (row * 3 + col)
         return small_board
 
-    def check_small_tic_tac_toe(self, small_board: int) -> bool:
+    def check_small_tic_tac_toe(self, player_bitboard: int,
+                                big_tile_index: int) -> bool:
         """
         Check for a Tic Tac Toe win in a specific small board.
 
         Args:
-            small_board (int): The 3x3 small board to check.
+            player_bitboard (int): The player's bitboard.
+            small_tile_index (int): The index of the small tile to check.
 
         Returns:
             bool: True if there's a Tic Tac Toe, False otherwise.
         """
-        return self.check_tic_tac_toe(small_board)
+        left_transform_number = big_tile_index % 3 * 3 + (big_tile_index // 3 * 27)
+        transformed_masks = [mask << left_transform_number for mask in SMALL_BITBOARD_WINNING_MASKS]
+        return any((player_bitboard & mask) == mask for mask in transformed_masks)
 
-    def check_bitboard_is_full(self, bitboard: int) -> bool:
+    def check_small_bitboard_is_full(self, bitboard: int,
+                               big_tile_index: int) -> bool:
         """
         Check if a small board is full.
 
         Args:
-            bitboard (int): The small board to check if is full.
+            bitboard (int): Big bitboard to check
+            big_tile_index (int): Index of the big tile to check
 
         Returns:
             bool: True if the small board is full, False otherwise.
         """
+        left_transform_number = big_tile_index % 3 * 3 + (big_tile_index // 3 * 27)
+        return (bitboard & (
+                    SMALL_BITBOARD_FULL_TILE_MASK << left_transform_number)) == (
+                SMALL_BITBOARD_FULL_TILE_MASK << left_transform_number)
+
+    def check_bitboard_is_full(self, bitboard: int) -> bool:
+        """
+        Check if a big board is full.
+
+        Args:
+            bitboard (int): The big bitboard to check.
+
+        Returns:
+            bool: True if the big board is full, False otherwise.
+        """
         return bitboard == 0b111_111_111
+
 
     def is_legal(self, move: Move) -> bool:
         """

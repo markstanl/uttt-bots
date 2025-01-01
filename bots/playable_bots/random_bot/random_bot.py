@@ -6,10 +6,10 @@ from bots import Bot, GameState
 
 
 class RandomBot(Bot, ABC):
-    def __init__(self, player_name: str = "random_bot"):
+    def __init__(self, bot_name: str = "random_bot"):
         self.player = None
         self.game_state = None
-        self.player_name = player_name
+        self.bot_name = bot_name
 
     def set_player(self, player: str) -> None:
         self.player = player
@@ -28,4 +28,4 @@ class RandomBot(Bot, ABC):
         self.game_state = game_state
 
     def __name__(self):
-        return self.player_name
+        return self.bot_name

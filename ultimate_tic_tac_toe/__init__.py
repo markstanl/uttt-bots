@@ -5,7 +5,6 @@ is licensed under the GNU License.
 import dataclasses
 from enum import Enum, auto
 from typing import Optional, TypeAlias, List
-import re
 
 FILE_NAMES = ["a", "b", "c", "d", "e", "f", "g", "h", "i"]
 
@@ -79,10 +78,10 @@ class Move:
 
         notation = notation.lower()
 
-        if not re.match(r"^[a-i][1-9]$", notation):
+        try:
+            return cls(parse_square(notation), player)
+        except Exception as e:
             raise InvalidMoveError("Invalid algebraic notation. Must be in the form 'a1', where a is a letter from a-i and 1 is a number from 1-9.")
-
-        return cls(parse_square(notation), player)
 
     @classmethod
     def from_bitboard(cls, binary_num, player: Player):
@@ -248,6 +247,8 @@ Squares: List[Square] = list(range(81))
 
 SQUARE_NAMES = [f + r for r in RANK_NAMES for f in FILE_NAMES]
 
+# Winning masks for the 3x3 board, if bitboard & mask == mask, then the player
+# has won. this is all binary operations so it is quick
 WINNING_MASKS = [
     0b000000111,  # Row 1
     0b000111000,  # Row 2
@@ -259,13 +260,27 @@ WINNING_MASKS = [
     0b001010100  # Diagonal 2
 ]
 
+# winning masks but on the 9x9 board. This can only check if a player has won
+# on the first big file, but with a left transform formula can check any other
+SMALL_BITBOARD_WINNING_MASKS = [
+    0b000_000_000_000_000_000_000_000_111, # Row 1
+    0b000_000_000_000_000_111_000_000_000, # Row 2
+    0b000_000_111_000_000_000_000_000_000, # Row 3
+    0b000_000_001_000_000_001_000_000_001, # Column 1
+    0b000_000_010_000_000_010_000_000_010, # Column 2
+    0b000_000_100_000_000_100_000_000_100, # Column 3
+    0b000_000_001_000_000_010_000_000_100, # Diagonal 1
+    0b000_000_100_000_000_010_000_000_001  # Diagonal 2
+]
+
+# same as before, 9x9 bitboard for if the first tile is full
+SMALL_BITBOARD_FULL_TILE_MASK = 0b000_000_111_000_000_111_000_000_111
+
 
 def parse_square(name: str) -> Square:
     """
     Gets the square index for the given square *name*
     (e.g., ``a1`` returns ``0``).
-
-    :raises: :exc:`ValueError` if the square name is invalid.
     """
     return SQUARE_NAMES.index(name)
 

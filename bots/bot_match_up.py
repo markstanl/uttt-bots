@@ -67,8 +67,8 @@ class BotMatchUp:
 if __name__ == '__main__':
     from bots.playable_bots.random_bot import RandomBot
 
-    bot1 = RandomBot(player_name="bot1")
-    bot2 = RandomBot(player_name="bot2")
+    bot1 = RandomBot(bot_name="bot1")
+    bot2 = RandomBot(bot_name="bot2")
     bot_match_up = BotMatchUp(bot1, bot2)
     bot_match_up.play(1000)
     print(bot_match_up.get_outcome())

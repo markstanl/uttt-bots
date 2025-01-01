@@ -38,8 +38,8 @@ class BotGame:
 
 if __name__ == '__main__':
     from bots.playable_bots.random_bot import RandomBot
-    bot1 = RandomBot(player_name="Random Bot 1")
-    bot2 = RandomBot(player_name="Random Bot 2")
+    bot1 = RandomBot(bot_name="Random Bot 1")
+    bot2 = RandomBot(bot_name="Random Bot 2")
     bot_game = BotGame(bot1, bot2)
     outcome = bot_game.play()
     print(outcome)

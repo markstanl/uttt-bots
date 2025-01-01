@@ -47,6 +47,10 @@ next_big_tile_index = index % 3 + 3 * (index // 9 % 3)
 ```Python
 current_big_tile_index = index // 27 * 3 + index % 9 // 3
 ```
+`Big Tile Index to Left Transform Bits`
+```Python
+left_transform_number = index % 3 * 3 + (index // 3 * 27)
+```
 
 ## Pythonic Play
 DESCRIBE HOW TO PLAY THE GAME IN PYTHON HERE
