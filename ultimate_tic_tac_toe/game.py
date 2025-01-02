@@ -221,6 +221,64 @@ class Game:
                     SMALL_BITBOARD_FULL_TILE_MASK << left_transform_number)) == (
                 SMALL_BITBOARD_FULL_TILE_MASK << left_transform_number)
 
+    def force_push(self, move: Move):
+        """
+        Force a move onto the board without checking for legality.
+        Args:
+            move: The move to force onto the board.
+        """
+        if not isinstance(move, Move):
+            raise InvalidMoveError(
+                "Move must be an instance of the Move class.")
+
+        if move.player != self.current_player:
+            raise IllegalMoveError("Wrong player.")
+
+        # Update the bitboards
+        self.bitboard |= 1 << move.index
+        if move.player == Player.X:
+            self.x_bitboard |= 1 << move.index
+        else:
+            self.o_bitboard |= 1 << move.index
+
+        # Update the big board bitboard
+        big_tile_index = move.index // 27 * 3 + move.index % 9 // 3
+        current_player_bitboard = self.x_bitboard if move.player == Player.X else self.o_bitboard
+
+        if self.check_small_tic_tac_toe(current_player_bitboard,
+                                        big_tile_index):
+            # only need to check the tile the move was made in
+            self.big_bitboard |= 1 << big_tile_index
+            if move.player == Player.X:
+                self.x_big_bitboard |= 1 << big_tile_index
+                if self.check_tic_tac_toe(self.x_big_bitboard):
+                    self.outcome = Outcome(Termination.TIC_TAC_TOE, Player.X)
+                elif self.check_bitboard_is_full(self.big_bitboard):
+                    self.outcome = Outcome(Termination.DRAW, None)
+
+            else:
+                self.o_big_bitboard |= 1 << big_tile_index
+                if self.check_tic_tac_toe(self.o_big_bitboard):
+                    self.outcome = Outcome(Termination.TIC_TAC_TOE, Player.O)
+                elif self.check_bitboard_is_full(self.big_bitboard):
+                    self.outcome = Outcome(Termination.DRAW, None)
+
+        elif self.check_small_bitboard_is_full(self.bitboard, big_tile_index):
+            # if the small board is full, update big bitboard so no nums
+            # can be played in that tile
+            self.big_bitboard |= 1 << big_tile_index
+            if self.check_bitboard_is_full(self.big_bitboard):
+                self.outcome = Outcome(Termination.DRAW, None)
+
+        # update game information
+        self.next_board_index = 1 << (
+                move.index % 3 + 3 * (move.index // 9 % 3))
+        if self.next_board_index & self.big_bitboard:
+            self.next_board_index = 0
+
+        self.current_player = Player.O if self.current_player == Player.X else Player.X
+        self.made_moves.append(move)
+
     def check_bitboard_is_full(self, bitboard: int) -> bool:
         """
         Check if a big board is full.
