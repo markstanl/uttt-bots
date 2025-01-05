@@ -7,7 +7,7 @@ from typing import Optional
 
 from ultimate_tic_tac_toe import Player, Move, Outcome, InvalidMoveError, \
     IllegalMoveError, WINNING_MASKS, SMALL_BITBOARD_WINNING_MASKS, \
-    SMALL_BITBOARD_FULL_TILE_MASK, Termination
+    SMALL_BITBOARD_FULL_TILE_MASK, Termination, render_bitboard
 from ultimate_tic_tac_toe.move_generator import generate_legal_moves
 
 
@@ -330,33 +330,48 @@ class Game:
                                     self.next_board_index,
                                     self.current_player)
 
+    def get_annotated_board(self) -> str:
+        """
+        Get the board as a string with annotations for each cell. Differs from
+        the string by including extra information about each cell. As well as
+        making big tiles that are won display the winning player's symbol.
+
+        Returns:
+            str: The annotated board.
+        """
+        winning_x_tile = ['X  X', ' X ', 'X X']
+        winning_o_tile = [' O ', 'O O', ' O ']
+
+        annotated_board = "  ABC DEF GHI\n"
+        board = render_bitboard(self.bitboard, self.o_bitboard)
+        i = 9
+        for row in board:
+            possible_index = (i - 1) * 9
+
+            annotated_board += f"{i} "
+            for j, space in enumerate(row):
+                current_index = possible_index + j
+                if self.x_big_bitboard & 1 << (current_index // 27 * 3 + current_index % 9 // 3) == 1:
+                    annotated_board += winning_o_tile[i % 3 - 1][j % 3]
+                elif self.o_big_bitboard & 1 << (current_index // 27 * 3 + current_index % 9 // 3) == 1:
+                    annotated_board += winning_o_tile[i % 3 - 1][j % 3]
+                else:
+                    annotated_board += space
+                if j % 3 == 2 and j != 8:
+                    annotated_board += "|"
+
+            if i % 3 == 1 and i != 1:
+                annotated_board += "\n ----+---+----"
+            annotated_board += "\n"
+            i -= 1
+        return annotated_board
+
+
     def __str__(self):
         """
         Render the board as a human-readable string.
         """
-
-        def render_bitboard(bitboard):
-            """
-            Converts a bitboard into a list of rows, with the first bit (rightmost)
-            mapping to the bottom-left value.
-            """
-            rows = []
-            for i in range(8, -1,
-                           -1):  # Iterate from the bottom row (8) to the top row (0)
-                row = ""
-                for j in range(9):  # Iterate left to right within each row
-                    # Calculate the bit position for the (i, j) cell
-                    position = i * 9 + j
-                    if bitboard & (1 << position):
-                        row += str(Player.X)  # X occupies this position
-                    elif self.o_bitboard & (1 << position):
-                        row += str(Player.O)  # O occupies this position
-                    else:
-                        row += str(Player.EMPTY)
-                rows.append(row)
-            return rows
-
-        board = render_bitboard(self.x_bitboard)
+        board = render_bitboard(self.bitboard, self.o_bitboard)
         result = ""
         for i in range(9):
             # Add a newline after every 3 rows for visual clarity
@@ -413,12 +428,16 @@ if __name__ == '__main__':
     move_1 = Move.from_algebraic("A1", Player.X)
     move_2 = Move.from_algebraic("B2", Player.O)
     move_3 = Move.from_algebraic("D4", Player.X)
+    move_4 = Move.from_algebraic("C2", Player.O)
+    move_5 = Move.from_algebraic("G4", Player.X)
+    move_6 = Move.from_algebraic("A2", Player.O)
 
     game = Game()
     game.push(move_1)
-    print(game.bitboard)
-    print(game)
     game.push(move_2)
-    print(game)
     game.push(move_3)
-    print(game)
+    game.push(move_4)
+    game.push(move_5)
+    game.push(move_6)
+    print(game.get_legal_moves())
+    print(game.get_annotated_board())

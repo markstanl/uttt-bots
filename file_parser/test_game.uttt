@@ -1,0 +1,13 @@
+[Event "Bot Game"]
+[Site "N/A"]
+[Date "2025-01-04"]
+[Round "-"]
+[X "random_bot"]
+[O "random_bot"]
+[Result "1-0"]
+[Termination "random_bot wins by tic-tac-toe"]
+
+1. D6 C7 2. I3 G7 3. B3 E8 4. E4 F1 5. H1 D2 6. A6 A7 7. C1 H3 8. D8 B5 9. D4 B1
+10. F2 G4 11. A3 B9 12. D9 B7 13. E2 D5 14. C4 G2 15. B6 F8 16. I6 H9 17. F7 I1
+18. I2 H6 19. E9 E7 20. F3 H8 21. E5 F5 22. H5 F4 23. G3 D1 24. C3 G8 25. C5 I4
+26. G1 A4 27. I9 I8 28. G5 A5 29. C6 H2 30. F6 D3 31. I5# 1-0

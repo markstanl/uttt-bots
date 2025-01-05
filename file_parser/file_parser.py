@@ -1,5 +1,7 @@
 import re
-from game.ultimate_tic_tac_toe import UltimateTicTacToe
+import textwrap
+from ultimate_tic_tac_toe.game import Game
+from ultimate_tic_tac_toe import Player, Move, Termination, Outcome
 
 
 def read_file(file_path: str) -> str:
@@ -113,11 +115,10 @@ def check_moves(file, strict=True):
 
     # if strict, ensures the game causes no errors
     if strict:
-        game = UltimateTicTacToe()
+        game = Game()
         for move in move_list:
             try:
-                move_tuple = game.parse_move(move)
-                game.make_valid_move(move_tuple[0], move_tuple[1])
+                move = Move.from_algebraic(move, game.current_player)
             except Exception as e:
                 print(f"Error in move {move}. Ensure that the moves are valid. Check if the move before allows move {move}.")
                 return False
@@ -140,11 +141,58 @@ def check_file(file: str, strict: bool = False) -> bool:
         return False
     return True
 
+def save_game(game: Game, file_path: str):
+    tags = {"Event": game.event,
+            "Site": game.site,
+            "Date": game.date,
+            "Round": game.round,
+            "X": game.x_player,
+            "O": game.o_player
+            }
+    if game.outcome:
+        tags["Result"] = game.outcome.result()
+        if game.outcome.winner:
+            winner_name = game.x_player if game.outcome.winner == Player.X else game.o_player
+            tags["Termination"] = game.outcome.termination.write_termination(winner_name)
+        else:
+            tags["Termination"] = game.outcome.termination.write_termination()
+
+    if game.annotator:
+        tags["Annotator"] = game.annotator
+    if game.time_control:
+        tags["TimeControl"] = game.time_control
+
+    move_string = ""
+    number = 1
+    for i, move in enumerate(game.made_moves):
+        if i % 2 == 0:
+            move_string += f"{number}. {move.to_algebraic().upper()} "
+            number += 1
+        else:
+            move_string += f"{move.to_algebraic().upper()} "
+
+    if game.outcome:
+        if game.outcome.termination == Termination.TIC_TAC_TOE:
+            move_string = move_string[:-1]
+            move_string += "#"
+        move_string += f" {game.outcome.result()}"
+
+    with open(f"{file_path}.uttt", 'w') as file:
+        for tag, value in tags.items():
+            file.write(f"[{tag} \"{value}\"]\n")
+        file.write("\n")
+        file.write(textwrap.fill(move_string, 80))
+        file.write("\n")
+
+
+
 
 if __name__ == '__main__':
-    file = read_file('example.txt')
-
-    if check_file(file, strict=True):
-        print("File is valid.")
-    else:
-        print("File is invalid.")
+    from bots.bot_game import BotGame
+    from bots.playable_bots.random_bot import RandomBot
+    bot1 = RandomBot()
+    bot2 = RandomBot()
+    game = BotGame(bot1, bot2)
+    game.play()
+    game_object = game.game
+    save_game(game_object, "test_game")

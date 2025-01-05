@@ -141,6 +141,11 @@ class Termination(Enum):
     """
     TIC_TAC_TOE = auto()
     DRAW = auto()
+    def write_termination(self, first: str = None):
+        if self == Termination.TIC_TAC_TOE:
+            return f"{first} wins by tic-tac-toe"
+        else:
+            return "Draw"
 
 @dataclasses.dataclass
 class Outcome:
@@ -303,3 +308,23 @@ def square_file(square: Square) -> int:
 def square_rank(square: Square) -> int:
     """Gets the rank index of the square where ``0`` is the first rank."""
     return square >> 3
+
+
+def render_bitboard(bitboard, o_bitboard):
+    """
+    Converts a bitboard into a list of rows, with the first bit (rightmost)
+    mapping to the bottom-left value.
+    """
+    rows = []
+    for i in range(8, -1, -1):
+        row = ""
+        for j in range(9):
+            position = i * 9 + j
+            if o_bitboard & (1 << position):
+                row += str(Player.O)
+            elif bitboard & (1 << position):
+                row += str(Player.X)
+            else:
+                row += str(Player.EMPTY)
+        rows.append(row)
+    return rows
