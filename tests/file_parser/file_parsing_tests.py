@@ -1,5 +1,5 @@
 import pytest
-from file_parser.file_parser import check_file, check_tags
+from upgn.upgn import check_file, check_tags
 
 
 def test_valid_file():

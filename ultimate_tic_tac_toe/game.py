@@ -231,9 +231,6 @@ class Game:
             raise InvalidMoveError(
                 "Move must be an instance of the Move class.")
 
-        if move.player != self.current_player:
-            raise IllegalMoveError("Wrong player.")
-
         # Update the bitboards
         self.bitboard |= 1 << move.index
         if move.player == Player.X:
@@ -278,6 +275,29 @@ class Game:
 
         self.current_player = Player.O if self.current_player == Player.X else Player.X
         self.made_moves.append(move)
+
+    def update_current_player(self) -> str:
+        """
+        Only to be called if you run force_push on the game, and want to
+        update the current player to what the next player should be.
+
+        Returns:
+            str: A description of what our best guess is
+        """
+        x_count = bin(self.x_bitboard).count('1')
+        o_count = bin(self.o_bitboard).count('1')
+        if x_count == o_count:
+            self.current_player = Player.X
+            return "X is the next player"
+        elif x_count - 1 == o_count:
+            self.current_player = Player.O
+            return "O is the next player"
+        elif x_count > o_count:
+            self.current_player = Player.O
+            return "O is probably the next player. Though the board seems is invalid"
+        else:
+            self.current_player = Player.X
+            return "X is probably the next player. Though the board seems is invalid"
 
     def check_bitboard_is_full(self, bitboard: int) -> bool:
         """
@@ -417,6 +437,8 @@ class Game:
             'made_moves', 'current_player', 'outcome'
         ]
 
+        print(self.next_board_index, other.next_board_index)
+
         for attr in attributes:
             if getattr(self, attr) != getattr(other, attr):
                 return False
@@ -431,6 +453,7 @@ if __name__ == '__main__':
     move_4 = Move.from_algebraic("C2", Player.O)
     move_5 = Move.from_algebraic("G4", Player.X)
     move_6 = Move.from_algebraic("A2", Player.O)
+    move_7 = Move.from_algebraic("A4", Player.X)
 
     game = Game()
     game.push(move_1)
@@ -439,5 +462,6 @@ if __name__ == '__main__':
     game.push(move_4)
     game.push(move_5)
     game.push(move_6)
+    game.push(move_7)
     print(game.get_legal_moves())
     print(game.get_annotated_board())

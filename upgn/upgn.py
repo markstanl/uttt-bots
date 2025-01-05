@@ -177,7 +177,7 @@ def save_game(game: Game, file_path: str):
             move_string += "#"
         move_string += f" {game.outcome.result()}"
 
-    with open(f"{file_path}.uttt", 'w') as file:
+    with open(f"{file_path}.upgn", 'w') as file:
         for tag, value in tags.items():
             file.write(f"[{tag} \"{value}\"]\n")
         file.write("\n")
