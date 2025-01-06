@@ -1,5 +1,6 @@
 from typing import List
 from bots.bot_game import BotGame
+from bots import Bot
 from ultimate_tic_tac_toe import Player
 
 
@@ -26,7 +27,7 @@ class MatchUpOutcome:
 
 
 class BotMatchUp:
-    def __init__(self, bot1, bot2):
+    def __init__(self, bot1: Bot, bot2: Bot):
         self.bot1 = bot1
         self.bot2 = bot2
         self.outcome = MatchUpOutcome()
@@ -45,13 +46,19 @@ class BotMatchUp:
                 bot_game = BotGame(self.bot2, self.bot1)
             bot_game.play()
             self.bot_games.append(bot_game)
-            print(bot_game.game.x_player)
+            print(f"X Player: {bot_game.game.x_player}, Winner: {bot_game.get_outcome().winner}")
 
-            # update the outcome
+            # update the get_outcome
             if bot_game.get_outcome().winner == Player.X:
-                self.outcome.add_bot1_win()
+                if bot1_is_x:
+                    self.outcome.add_bot1_win()
+                else:
+                    self.outcome.add_bot2_win()
             elif bot_game.get_outcome().winner == Player.O:
-                self.outcome.add_bot2_win()
+                if bot1_is_x:
+                    self.outcome.add_bot2_win()
+                else:
+                    self.outcome.add_bot1_win()
             else:
                 self.outcome.add_draw()
 
@@ -66,9 +73,12 @@ class BotMatchUp:
 
 if __name__ == '__main__':
     from bots.playable_bots.random_bot import RandomBot
+    from bots.playable_bots.minimax_2.powell_merrill_evaluation import \
+        PowellMerrillEval
+    from bots.playable_bots.minimax_2.minimax_2 import Minimax2
 
-    bot1 = RandomBot(bot_name="bot1")
-    bot2 = RandomBot(bot_name="bot2")
+    bot1 = RandomBot()
+    bot2 = Minimax2(PowellMerrillEval())
     bot_match_up = BotMatchUp(bot1, bot2)
-    bot_match_up.play(1000)
+    bot_match_up.play(100)
     print(bot_match_up.get_outcome())

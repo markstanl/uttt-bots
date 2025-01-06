@@ -33,13 +33,16 @@ class BotGame:
                 return self.game.outcome
 
     def get_outcome(self) -> Outcome:
-        return self.game.outcome
+        return self.game.get_outcome()
 
 
 if __name__ == '__main__':
     from bots.playable_bots.random_bot import RandomBot
-    bot1 = RandomBot(bot_name="Random Bot 1")
-    bot2 = RandomBot(bot_name="Random Bot 2")
+    from bots.playable_bots.minimax_2.minimax_2 import Minimax2
+    from bots.playable_bots.minimax_2.powell_merrill_evaluation import PowellMerrillEval
+    bot1 = RandomBot()
+    evaluation = PowellMerrillEval()
+    bot2 = Minimax2(evaluation)
     bot_game = BotGame(bot1, bot2)
     outcome = bot_game.play()
     print(outcome)

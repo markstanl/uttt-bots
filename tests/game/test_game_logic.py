@@ -33,7 +33,6 @@ class TestGameLogic:
         # we expect 0 errors
 
         assert game.outcome == Outcome(Termination.TIC_TAC_TOE, self.x)
-        print(game.get_legal_moves())
 
     def test_illegal_moves(self):
         generated_move_order = ['F1', 'H2', 'E4', 'E3', 'F8', 'H6', 'E9', 'D7',
@@ -113,6 +112,36 @@ class TestGameLogic:
 
         assert winning_move == popped_move
         assert game_before_win == game
+
+        # test a case where popping occurs after an any tile play
+        new_generated_move_order = ['F1', 'H2', 'E4', 'E3', 'F8', 'H6', 'E9', 'D7',
+                                'C2', 'G5', 'B4', 'E1', 'F3', 'I8', 'I5', 'G6',
+                                'C8', 'I4', 'G2', 'A5', 'B6', 'F7', 'H3', 'E8',
+                                'F6', 'G9', 'C9', 'I9', 'H9', 'F9', 'H8', 'D6',
+                                'A9', 'C7', 'I3', 'H7', 'D2', 'C5', 'I6', 'G7',
+                                'B2', 'E6', 'C1', 'I2', 'H5', 'D4', 'C3', 'I7',
+                                'I1', 'H1']
+        x_turn = True
+        free_move_game = Game()
+        for move in new_generated_move_order:
+            real_move = Move.from_algebraic(move, self.x) if x_turn else \
+                Move.from_algebraic(move, self.o)
+            free_move_game.push(real_move)
+            x_turn = not x_turn
+
+        pre_free_move_game = copy.copy(free_move_game)
+        free_move_game.push(Move.from_algebraic('D1', self.x))
+        popped_move = free_move_game.pop()
+        assert popped_move == Move.from_algebraic('D1', self.x)
+        assert pre_free_move_game == free_move_game
+
+        free_move_game.push(popped_move)
+        next_move = Move.from_algebraic('G4', self.o)
+        free_state_game = copy.copy(free_move_game)
+        free_move_game.push(next_move)
+
+        assert next_move == free_move_game.pop()
+        assert free_state_game.next_board_index == free_move_game.next_board_index
 
     def test_draw(self):
         generated_moves = ['e4', 'd3', 'c9', 'g7', 'b1', 'd1', 'a1', 'a3',

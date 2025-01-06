@@ -1,4 +1,4 @@
-# Minimax 1 Bot
+# Powell-Merrill Evaluation Function
 This bot employs a simple minimax function with the hueristic evaluation function allegedly based on the Powell-Merrill
 paper, but I am unable to find it. But, I was able to locate a comment on [this stackexchange post](https://boardgames.stackexchange.com/questions/49291/strategy-for-ultimate-tic-tac-toe)
 that describes the Powell-Merrill algorithm as follows:
@@ -15,3 +15,8 @@ that describes the Powell-Merrill algorithm as follows:
         8. Making a move in a board that has no benefit to the player subtracts 20 points
 
 ```
+
+## MiniMax Bot
+With a simple MiniMax algorithm without pruning, and a low depth of three, this bot was able to beat the random bot 
+100-0, with 0 draws. If Probability Theory did me well, this gives us a 95% confidence interval that the true win 
+probability is in the range (.902, 1) against the random bot.

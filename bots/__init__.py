@@ -84,12 +84,24 @@ class GameState:
         return self.game.next_board_index
 
     def get_outcome(self) -> Outcome:
-        return self.game.outcome()
+        return self.game.get_outcome()
 
     def is_game_over(self) -> bool:
         return self.game.is_game_over()
 
+    def get_game(self) -> Game:
+        return self.game
+
     def copy(self):
+        return GameState(copy.copy(self.game))
+
+    def push(self, move):
+        self.game.push(move)
+
+    def pop(self):
+        self.game.pop()
+
+    def __copy__(self):
         return GameState(copy.copy(self.game))
 
     def __str__(self):

@@ -149,6 +149,8 @@ class Game:
         last_move = self.made_moves[-1] if self.made_moves else None
         self.next_board_index = 1 << (last_move.index % 3 + 3 * (
                 last_move.index // 9 % 3)) if last_move else 0
+        if self.next_board_index & self.big_bitboard:
+            self.next_board_index = 0
         self.current_player = Player.O if self.current_player == Player.X else Player.X
 
         return move
@@ -332,7 +334,7 @@ class Game:
 
         return not (self.bitboard & (1 << move.index))
 
-    def outcome(self) -> Optional[Outcome]:
+    def get_outcome(self) -> Optional[Outcome]:
         return self.outcome
 
     def is_game_over(self) -> bool:
@@ -434,10 +436,8 @@ class Game:
         attributes = [
             'bitboard', 'x_bitboard', 'o_bitboard', 'big_bitboard',
             'x_big_bitboard', 'o_big_bitboard', 'next_board_index',
-            'made_moves', 'current_player', 'outcome'
+            'made_moves', 'current_player', 'get_outcome'
         ]
-
-        print(self.next_board_index, other.next_board_index)
 
         for attr in attributes:
             if getattr(self, attr) != getattr(other, attr):
