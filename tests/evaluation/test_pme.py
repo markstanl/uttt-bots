@@ -1,4 +1,4 @@
-from bots.playable_bots.minimax_2.powell_merrill_evaluation import PowellMerrillEval
+from bots.eval.pm_eval.powell_merrill_evaluation import PowellMerrillEval
 from bots import GameState
 from ultimate_tic_tac_toe import Move, Player
 from ultimate_tic_tac_toe.game import Game

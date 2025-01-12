@@ -1,5 +1,5 @@
 from ultimate_tic_tac_toe.game import Game
-from ultimate_tic_tac_toe import Move, Player, Outcome
+from ultimate_tic_tac_toe import Player, Outcome
 from bots import Bot, GameState
 
 
@@ -38,11 +38,12 @@ class BotGame:
 
 if __name__ == '__main__':
     from bots.playable_bots.random_bot import RandomBot
-    from bots.playable_bots.minimax_2.minimax_2 import Minimax2
-    from bots.playable_bots.minimax_2.powell_merrill_evaluation import PowellMerrillEval
+    from bots.playable_bots.v2_0_pruning import Pruning
+    from bots.eval.pm_eval.powell_merrill_evaluation import PowellMerrillEval
+
     bot1 = RandomBot()
     evaluation = PowellMerrillEval()
-    bot2 = Minimax2(evaluation)
+    bot2 = Pruning(evaluation)
     bot_game = BotGame(bot1, bot2)
     outcome = bot_game.play()
     print(outcome)

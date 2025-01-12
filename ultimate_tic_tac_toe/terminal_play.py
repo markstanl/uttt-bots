@@ -115,7 +115,8 @@ class SinglePlayerGame:
 
 
 if __name__ == '__main__':
-    from bots.playable_bots.random_bot import RandomBot
-    bot = RandomBot()
+    from bots.playable_bots.v1_minimax.minimax import Minimax2
+    from bots.eval.pm_eval.powell_merrill_evaluation import PowellMerrillEval
+    bot = Minimax2(PowellMerrillEval())
     game = SinglePlayerGame(bot)
     game.play()

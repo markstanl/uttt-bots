@@ -1,9 +1,9 @@
 import copy
 from abc import ABC, abstractmethod
-from typing import Any, Tuple, Set
+from typing import Any, Set
 
-from ultimate_tic_tac_toe.game import Game
 from ultimate_tic_tac_toe import Move, Player, Outcome
+from ultimate_tic_tac_toe.game import Game
 
 
 class Bot(ABC):

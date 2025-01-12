@@ -1,21 +1,25 @@
 import copy
 
 from bots import Bot, Evaluation, GameState
+from bots.eval.v0_move_order.move_order import MoveOrdering
 from ultimate_tic_tac_toe import Player, Move
 
 
-class Minimax2(Bot):
+class JohnBotV2_1(Bot):
     def __init__(self, evaluation: Evaluation,
-                 bot_name: str = "minimax_2"):
+                 bot_name: str = "johnbot v2.1 move ordering"):
         self.evaluation = evaluation
         self.player = None
         self.game_state = None
         self.bot_name = bot_name
+        self.move_ordering = MoveOrdering()
+        self.all_positions_evaluated = []
 
     def set_player(self, player: Player) -> None:
         self.player = player
 
     def pick_move(self) -> Move:
+        self.positions_evaluated = 0
         if self.game_state.is_game_over():
             raise ValueError('Game is over')
 
@@ -23,14 +27,17 @@ class Minimax2(Bot):
             raise ValueError('Not the bot\'s turn')
 
         valid_moves = self.game_state.get_legal_moves()
+        ordered_moves = self.order_moves(list(valid_moves), self.player)
         gamestate_copy = copy.copy(self.game_state)
 
         best_move = None
         best_score = float('-inf') if self.player == Player.X else float('inf')
-        for move in valid_moves:
+        for move in ordered_moves:
             gamestate_copy.push(move)
             score = self.minimax(gamestate_copy,
                                  depth=3,
+                                 alpha=float('-inf'),
+                                 beta=float('inf'),
                                  maximizing=(self.player != Player.X))
 
             if self.player == Player.X and score > best_score:
@@ -41,18 +48,32 @@ class Minimax2(Bot):
                 best_move = move
             gamestate_copy.pop()
 
+        self.all_positions_evaluated.append(self.positions_evaluated)
         return best_move
 
-    def minimax(self, game_state: GameState, depth: int, maximizing: bool) -> float:
+    def minimax(self,
+                game_state: GameState,
+                depth: int,
+                alpha: float,
+                beta: float,
+                maximizing: bool) -> float:
         if depth == 0 or game_state.is_game_over():
             return self.evaluation.evaluate(game_state)
+
+        self.positions_evaluated += 1
 
         if maximizing:
             max_eval = float('-inf')
             for move in game_state.get_legal_moves():
                 game_state.push(move)
-                curr_eval = self.minimax(game_state, depth - 1, False)
+                curr_eval = self.minimax(game_state, depth - 1, alpha, beta, False)
                 max_eval = max(max_eval, curr_eval)
+
+                alpha = max(alpha, max_eval)
+                if beta <= alpha:
+                    game_state.pop()
+                    break
+
                 game_state.pop()
             return max_eval
 
@@ -60,10 +81,25 @@ class Minimax2(Bot):
             min_eval = float('inf')
             for move in game_state.get_legal_moves():
                 game_state.push(move)
-                curr_eval = self.minimax(game_state, depth - 1, True)
+                curr_eval = self.minimax(game_state, depth - 1, alpha, beta, True)
                 min_eval = min(min_eval, curr_eval)
+
+                beta = min(beta, min_eval)
+                if beta <= alpha:
+                    game_state.pop()
+                    break
+
                 game_state.pop()
             return min_eval
+
+    def order_moves(self, moves: list[Move],
+                    maximizing_player: Player) -> list[Move]:
+        game_state_copy = copy.copy(self.game_state)
+        return self.move_ordering.sort_moves(game_state_copy, moves, maximizing_player)
+
+
+
+
 
     def update(self, game_state: GameState) -> None:
         self.game_state = game_state
@@ -71,13 +107,19 @@ class Minimax2(Bot):
     def __name__(self) -> str:
         return self.bot_name
 
+
 if __name__ == '__main__':
     from bots.playable_bots.random_bot import RandomBot
-    from bots.playable_bots.minimax_2.powell_merrill_evaluation import PowellMerrillEval
+    from bots.eval.pm_eval.powell_merrill_evaluation import PowellMerrillEval
     from bots.bot_game import BotGame
+
     bot1 = RandomBot()
+    bot2 = JohnBotV2_1(PowellMerrillEval())
     evaluation = PowellMerrillEval()
-    bot2 = Minimax2(evaluation)
     bot_game = BotGame(bot1, bot2)
     outcome = bot_game.play()
+    positions_evaluated = bot2.all_positions_evaluated
     print(outcome)
+
+    print(positions_evaluated)
+    print(sum(positions_evaluated) / len(positions_evaluated))

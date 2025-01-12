@@ -1,6 +1,7 @@
 from typing import List
-from bots.bot_game import BotGame
+
 from bots import Bot
+from bots.bot_game import BotGame
 from ultimate_tic_tac_toe import Player
 
 
@@ -27,11 +28,12 @@ class MatchUpOutcome:
 
 
 class BotMatchUp:
-    def __init__(self, bot1: Bot, bot2: Bot):
+    def __init__(self, bot1: Bot, bot2: Bot, print_games: bool = False):
         self.bot1 = bot1
         self.bot2 = bot2
         self.outcome = MatchUpOutcome()
         self.bot_games = []
+        self.print_games = print_games
 
     def play(self, num_games=1000) -> None:
         if not self.outcome.is_empty():
@@ -44,9 +46,15 @@ class BotMatchUp:
                 bot_game = BotGame(self.bot1, self.bot2)
             else:
                 bot_game = BotGame(self.bot2, self.bot1)
+
+            if self.print_games:
+                print("Game is starting")
+
             bot_game.play()
             self.bot_games.append(bot_game)
-            print(f"X Player: {bot_game.game.x_player}, Winner: {bot_game.get_outcome().winner}")
+
+            if self.print_games:
+                print(f"X Player: {bot_game.game.x_player}, O Player: {bot_game.game.o_player} Winner: {bot_game.get_outcome().winner}")
 
             # update the get_outcome
             if bot_game.get_outcome().winner == Player.X:
@@ -73,12 +81,13 @@ class BotMatchUp:
 
 if __name__ == '__main__':
     from bots.playable_bots.random_bot import RandomBot
-    from bots.playable_bots.minimax_2.powell_merrill_evaluation import \
+    from bots.eval.pm_eval.powell_merrill_evaluation import \
         PowellMerrillEval
-    from bots.playable_bots.minimax_2.minimax_2 import Minimax2
+    from bots.playable_bots.v1_minimax.minimax import Minimax2
+    from bots.playable_bots.v2_1_move_order.john_bot import JohnBotV2_1
 
-    bot1 = RandomBot()
-    bot2 = Minimax2(PowellMerrillEval())
-    bot_match_up = BotMatchUp(bot1, bot2)
-    bot_match_up.play(100)
+    bot1 = JohnBotV2_1(PowellMerrillEval())
+    bot2 = RandomBot()
+    bot_match_up = BotMatchUp(bot1, bot2, print_games=True)
+    bot_match_up.play(10)
     print(bot_match_up.get_outcome())

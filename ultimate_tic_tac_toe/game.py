@@ -436,7 +436,7 @@ class Game:
         attributes = [
             'bitboard', 'x_bitboard', 'o_bitboard', 'big_bitboard',
             'x_big_bitboard', 'o_big_bitboard', 'next_board_index',
-            'made_moves', 'current_player', 'get_outcome'
+            'made_moves', 'current_player', 'outcome'
         ]
 
         for attr in attributes:
@@ -444,6 +444,27 @@ class Game:
                 return False
 
         return True
+
+    def whats_unequal(self, other):
+        """
+        Check for equality between two Game objects because the other one does
+        not give any information on what portions of the game are unequal
+        """
+        if not isinstance(other, Game):
+            return False
+
+        attributes = [
+            'bitboard', 'x_bitboard', 'o_bitboard', 'big_bitboard',
+            'x_big_bitboard', 'o_big_bitboard', 'next_board_index',
+            'made_moves', 'current_player', 'outcome'
+        ]
+
+        unequal_attributes = []
+        for attr in attributes:
+            if getattr(self, attr) != getattr(other, attr):
+                unequal_attributes.append((attr, getattr(self, attr), getattr(other, attr)))
+
+        return unequal_attributes
 
 
 if __name__ == '__main__':
