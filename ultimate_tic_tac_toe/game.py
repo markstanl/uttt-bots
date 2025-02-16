@@ -445,6 +445,16 @@ class Game:
 
         return True
 
+    def __hash__(self):
+        """
+        Hash the game state for use in a dictionary or set.
+        """
+        return hash((
+            self.bitboard, self.x_bitboard, self.o_bitboard,
+            self.big_bitboard, self.x_big_bitboard, self.o_big_bitboard,
+            self.next_board_index, tuple(self.made_moves), self.current_player,
+            self.outcome))
+
     def whats_unequal(self, other):
         """
         Check for equality between two Game objects because the other one does

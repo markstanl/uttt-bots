@@ -6,6 +6,9 @@ sorting the static evaluation of the first move is not very helpful, it adds
 a few seconds to the bots processing time.
 
 Thus, we will consider efficient ways to sort the moves.
+
+This starts with a low intensity static evaluation, which does simple binary
+calculations to give rough estimates of how good the move is
 """
 from bots import GameState
 from ultimate_tic_tac_toe import Move, Player, SMALL_BITBOARD_CENTER_MASK_ANY

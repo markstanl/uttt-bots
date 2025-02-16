@@ -107,6 +107,9 @@ class GameState:
     def __str__(self):
         return str(self.game)
 
+    def __hash__(self):
+        return hash(self.game)
+
 class Evaluation(ABC):
     @abstractmethod
     def evaluate(self, game_state: GameState) -> float:

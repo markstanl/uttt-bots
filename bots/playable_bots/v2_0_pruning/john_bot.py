@@ -7,7 +7,9 @@ from ultimate_tic_tac_toe import Player, Move
 class JohnBotV2(Bot):
     def __init__(self,
                  evaluation: Evaluation,
-                 bot_name: str = "v2_0_pruning"):
+                 bot_name: str = "v2_0_pruning",
+                 depth=3):
+        self.depth = depth
         self.evaluation = evaluation
         self.player = None
         self.game_state = None
@@ -33,7 +35,7 @@ class JohnBotV2(Bot):
         for move in valid_moves:
             gamestate_copy.push(move)
             score = self.minimax(gamestate_copy,
-                                 depth=3,
+                                 depth=self.depth,
                                  alpha=float('-inf'),
                                  beta=float('inf'),
                                  maximizing=(self.player != Player.X))

@@ -7,12 +7,15 @@ from ultimate_tic_tac_toe import Player, Move
 
 class JohnBotV2_1(Bot):
     def __init__(self, evaluation: Evaluation,
-                 bot_name: str = "johnbot v2.1 move ordering"):
+                 bot_name: str = "johnbot v2.1 move ordering w/ iterative deepening"):
         self.evaluation = evaluation
         self.player = None
         self.game_state = None
         self.bot_name = bot_name
         self.move_ordering = MoveOrdering()
+
+        # really only for debugging purposes
+        self.positions_evaluated = 0
         self.all_positions_evaluated = []
 
     def set_player(self, player: Player) -> None:
@@ -20,18 +23,23 @@ class JohnBotV2_1(Bot):
 
     def pick_move(self) -> Move:
         self.positions_evaluated = 0
+
+        # Basic checks to ensure the bot can make a move
         if self.game_state.is_game_over():
             raise ValueError('Game is over')
 
         if self.game_state.get_current_player() != self.player:
             raise ValueError('Not the bot\'s turn')
 
+        # Get and order the valid moves
         valid_moves = self.game_state.get_legal_moves()
         ordered_moves = self.order_moves(list(valid_moves), self.player)
         gamestate_copy = copy.copy(self.game_state)
 
+        # Minimax algorithm with alpha-beta pruning
         best_move = None
         best_score = float('-inf') if self.player == Player.X else float('inf')
+
         for move in ordered_moves:
             gamestate_copy.push(move)
             score = self.minimax(gamestate_copy,
