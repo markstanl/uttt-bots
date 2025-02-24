@@ -43,11 +43,17 @@ def load_utttai(byte_array: bytearray):
 
 
 def utttai_small_index_to_u3t_small_index(index: int):
-    big_row = index // 27
-    big_col = index // 9 % 3
-    print(big_row, big_col)
+    """
+    Converts a UTTTAI small index to a U3T small index.
 
-    return index
+    Args:
+        index: the original utttai index
+
+    Returns:
+        the updated u3t index
+    """
+    return 27 * (2 - (index // 27)) + 9 * (2 - ((index // 3) % 3)) + (index % 3) + 3 * ((index // 9) % 3)
+
 
 def u3t_small_index_to_utttai_small_index(index: int):
     """

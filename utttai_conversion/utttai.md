@@ -54,3 +54,13 @@ UTTTAI definitely employs some non-conventional practices, but it creates a darn
 the dataset to follow some more traditional conventions.
 
 ## Conversion
+A dictionary lookup is quicker, but use the following formulas to convert between the two indices.
+
+### From UTTTAI to U3T
+```
+u3t_tile_index = 27 * (2 - (index // 27)) + 9 * (2 - ((index // 3) % 3)) + (index % 3) + 3 * ((index // 9) % 3)
+```
+### From U3T to UTTTAI
+```
+utttai_tile_index = 9 * (2 - (index // 9)) + 3 * (2 - ((index // 3) % 3)) + (index % 3) + 3 * ((index // 27) % 3)
+```
