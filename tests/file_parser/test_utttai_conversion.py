@@ -22,10 +22,11 @@ class TestUtttaiConversion:
                                (63, 3), (64, 4), (65, 5), (66, 12), (67, 13), (68, 14), (69, 21), (70, 22), (71, 23),
                                 (72, 0), (73, 1), (74, 2), (75, 9), (76, 10), (77, 11), (78, 18), (79, 19), (80, 20)]
 
-    def test_small_index_conversion(self):
+    def test_small_u3t_to_utttai(self):
         for u3t_index, utttai_index in self.u3t_to_utttai_small_pairs:
             assert utttai_conversion.u3t_small_index_to_utttai_small_index(u3t_index) == utttai_index
 
+    def test_small_utttai_to_u3t(self):
         for u3t_index, utttai_index in self.u3t_to_utttai_small_pairs:
             assert utttai_conversion.utttai_small_index_to_u3t_small_index(utttai_index) == u3t_index
 
