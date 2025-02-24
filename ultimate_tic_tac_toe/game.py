@@ -485,6 +485,7 @@ if __name__ == '__main__':
     move_5 = Move.from_algebraic("G4", Player.X)
     move_6 = Move.from_algebraic("A2", Player.O)
     move_7 = Move.from_algebraic("A4", Player.X)
+    move_8 = Move.from_algebraic("A7", Player.O)
 
     game = Game()
     game.push(move_1)
@@ -494,5 +495,7 @@ if __name__ == '__main__':
     game.push(move_5)
     game.push(move_6)
     game.push(move_7)
-    print(game.get_legal_moves())
+    # game.push(move_8)
+
     print(game.get_annotated_board())
+    print(game.next_board_index)
