@@ -1,6 +1,6 @@
 from ultimate_tic_tac_toe import Player, Move
 from ultimate_tic_tac_toe.game import Game
-from utttai_conversion import utttai_conversion
+from utttai_conversion import utttai_convert
 
 class TestUtttaiConversion:
     def setup_method(self):
@@ -24,15 +24,15 @@ class TestUtttaiConversion:
 
     def test_small_u3t_to_utttai(self):
         for u3t_index, utttai_index in self.u3t_to_utttai_small_pairs:
-            assert utttai_conversion.u3t_small_index_to_utttai_small_index(u3t_index) == utttai_index
+            assert utttai_convert.u3t_to_utttai(u3t_index) == utttai_index
 
     def test_small_utttai_to_u3t(self):
         for u3t_index, utttai_index in self.u3t_to_utttai_small_pairs:
-            assert utttai_conversion.utttai_small_index_to_u3t_small_index(utttai_index) == u3t_index
+            assert utttai_convert.utttai_small_index_to_u3t_small_index(utttai_index) == u3t_index
 
     def test_big_index_conversion(self):
         for u3t_index, utttai_index in self.u3t_to_utttai_big_pairs:
-            assert utttai_conversion.u3t_big_index_to_utttai_big_index(u3t_index) == utttai_index
+            assert utttai_convert.u3t_to_utttai_big(u3t_index) == utttai_index
 
         for u3t_index, utttai_index in self.u3t_to_utttai_big_pairs:
-            assert utttai_conversion.utttai_big_index_to_u3t_big_index(utttai_index) == u3t_index
+            assert utttai_convert.utttai_to_u3t_big(utttai_index) == u3t_index

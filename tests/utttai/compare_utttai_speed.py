@@ -1,11 +1,11 @@
-from utttai_conversion.utttai_conversion import utttai_small_index_to_u3t_small_index, u3t_small_index_to_utttai_small_index
+from utttai_conversion.utttai_convert import utttai_small_index_to_u3t_small_index, u3t_to_utttai
 import timeit
 import random
 
 def time_conversion(test_nums: list[int]):
     for num in test_nums:
         utttai_small_index_to_u3t_small_index(num)
-        u3t_small_index_to_utttai_small_index(num)
+        u3t_to_utttai(num)
 
 def time_lookup(test_nums: list[int], u3t_to_utttai: dict[int, int], utttai_to_u3t: dict[int, int]):
     for num in test_nums:

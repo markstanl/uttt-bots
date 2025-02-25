@@ -352,6 +352,27 @@ class Game:
                                     self.next_board_index,
                                     self.current_player)
 
+    def get_byte_array(self) -> bytearray:
+        """
+        Get the game state as a byte array.
+
+        Returns:
+            bytearray: The game state as a byte array.
+        """
+        byte_array = bytearray(93)
+        byte_array[90] = 1 if self.current_player == Player.X else 2
+        print(bin(self.next_board_index))
+        print(self.next_board_index)
+        byte_array[91] = 9 if self.next_board_index == 0 else self.next_board_index.bit_length() - 1
+        byte_array[92] = 0 if self.outcome is None else 1 if self.outcome.winner == Player.X else 2 if self.outcome.winner == Player.O else 3
+        for i in range(81):
+            byte_array[80-i] = 1 if self.x_bitboard & 1 << i else 2 if self.o_bitboard & 1 << i else 0
+
+        for i in range(9):
+            byte_array[89-i] = 1 if self.x_big_bitboard & 1 << i else 2 if self.o_big_bitboard & 1 << i else 0
+
+        return byte_array
+
     def get_annotated_board(self) -> str:
         """
         Get the board as a string with annotations for each cell. Differs from
@@ -398,7 +419,7 @@ class Game:
         for i in range(9):
             # Add a newline after every 3 rows for visual clarity
             if i % 3 == 0 and i != 0:
-                result += "----+----+----\n"
+                result += "----+-----+----\n"
             result += " | ".join(
                 ["".join(board[i][j:j + 3]) for j in range(0, 9, 3)]) + "\n"
 

@@ -1,15 +1,19 @@
 # UTTTAI Conversion
 
-[UTTTAI](https://github.com/markstanl/utttai) is another attempt (and a better one at that) at making an AI that can play
+[UTTTAI](https://github.com/markstanl/utttai) is another attempt (and a better one at that) at making an AI that can
+play
 U3T. They provide the dataset that is used to train out models. But, their internal implementation of game stat
-differs from how we understand it. For convenience, we will call our project `U3T`, and their project `UTTTAI`. The 
-dataset on hugging face that we have altered generally keeps the general data structure that UTTAI uses, but with 
-reworked standard conventions for indices.
+differs from how we understand it. For convenience, we will call our project `U3T`, and their project `UTTTAI`. The
+dataset on hugging face that we have altered generally keeps the general data structure that UTTAI uses, but with
+reworked standard conventions for indices.  
+  
+The `utttai_convert` module contains the functions to convert between the two formats, specifically, it reformats the
+data to more standard u3t conventions, which will be described below.
 
 ## U3T Logic
 
 Our game stores 6 bitboards, 2 for each X, O, and any presence on the small tile bitboard, and the supergame big
-bitboard, with the least significant bit referring to the lowest index (bottom left), moving rightward and upward until 
+bitboard, with the least significant bit referring to the lowest index (bottom left), moving rightward and upward until
 the msb is the top right bit.
 
 ## UTTTAI Logic
@@ -26,10 +30,11 @@ the result for a win is the X or O value, and a draw is 3. They also follow the 
 convention.
 
 ## Key differences
+
 UTTTAI initially dictates rows and columns via indices 0-8, as opposed to the classical algebraic notation.
 The indices of a move are completely different between the two versions. U3T employs the standard chess-style approach
 for indices (as seen from [chess-programming](https://www.chessprogramming.org/0x88)
-or [bitboard beginnings](https://pages.cs.wisc.edu/~psilord/blog/data/chess-pages/rep.html). UTTTAI, on the other hand, 
+or [bitboard beginnings](https://pages.cs.wisc.edu/~psilord/blog/data/chess-pages/rep.html). UTTTAI, on the other hand,
 starts with 0 in the top left corner, and proceeds in what I will call row-big tile
 order, by proceeding rightward down the row until it would hit a new supergame, then just proceeding down the row in the
 current big tile. You can see the differences in the following images.
@@ -45,22 +50,38 @@ current big tile. You can see the differences in the following images.
 This applies the same to the indices of the superboards (big boards). Consider:
 
 ### UTTTAI Superboard
+
 ![UTTTAI](/assets/utttai big.png)
 
 ### U3T Superboard
+
 ![U3T](/assets/num big.png)
 
 UTTTAI definitely employs some non-conventional practices, but it creates a darn good AI model. So we will be fixing up
 the dataset to follow some more traditional conventions.
 
 ## Conversion
-A dictionary lookup is quicker, but use the following formulas to convert between the two indices.
+
+A dictionary lookup is quicker, which you cna find in the `utttai_conversion` init file, but use the following formulas
+to convert between the two indices.
 
 ### From UTTTAI to U3T
+
 ```
 u3t_tile_index = 27 * (2 - (index // 27)) + 9 * (2 - ((index // 3) % 3)) + (index % 3) + 3 * ((index // 9) % 3)
 ```
+
 ### From U3T to UTTTAI
+
 ```
 utttai_tile_index = 9 * (2 - (index // 9)) + 3 * (2 - ((index // 3) % 3)) + (index % 3) + 3 * ((index // 27) % 3)
 ```
+
+## Updated Format
+```
+byte_array = / "subgames" (small board) / "supergames" (big board) / current player / constraint /  result
+                    (81 bytes)                  (9 bytes)               (1 byte)       (1 byte)    (1 byte)
+```
+The subgames and supergames byte array now follows the u3t convention, as shown in the images above, with the lsb 
+matching to the lowest index. The constraint byte also follows the big board index convention of u3t. The result and
+current player bytes remain the same. 
