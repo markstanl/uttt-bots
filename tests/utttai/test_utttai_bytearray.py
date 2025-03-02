@@ -167,3 +167,8 @@ class TestUTTTAIByteArray():
             byte_array = game.get_byte_array()
             assert byte_array == utttai_convert.byteboard_refactor(byteboards[i])
             x_turn = not x_turn
+
+    def test_convert_integer(self):
+        expected_state = utttai_convert.array_to_int(self.utttai_byte_array)
+        converted_state = utttai_convert.numerical_string_refactor(expected_state)
+        assert utttai_convert.array_to_int(self.expected_u3t_byte_array) == converted_state

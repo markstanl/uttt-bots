@@ -7,7 +7,7 @@ standard data in the huggingface dataset. The other methods are helpers
 """
 from ultimate_tic_tac_toe import Player, Move, Termination, Outcome
 from ultimate_tic_tac_toe.game import Game
-from utttai_conversion import utttai_to_u3t
+from utttai_conversion import utttai_to_u3t_dict
 
 
 def load_utttai(byte_array: bytearray):
@@ -128,7 +128,7 @@ def byteboard_refactor(board: bytearray) -> bytearray:
     converted_board = board.copy()
 
     for i in range(81):
-        converted_board[80 - utttai_to_u3t[i]] = board[i]
+        converted_board[80 - utttai_to_u3t_dict[i]] = board[i]
 
     for i in range(9):
         converted_board[89 - utttai_to_u3t_big(i)] = board[81 + i]
@@ -137,3 +137,58 @@ def byteboard_refactor(board: bytearray) -> bytearray:
         converted_board[91] = utttai_to_u3t_big(board[91])
 
     return converted_board
+
+def numerical_string_refactor(board: int or str, return_type: str = 'int') -> int or str:
+    """
+    Performs the same conversion as the byteboard_refactor method, but on a
+    numerical string. This is used for the hugging face dataset
+
+    Args:
+        board: the original board
+
+    Returns:
+        the updated board
+    """
+    if len(str(board)) != 93:
+        raise ValueError("The board must be 93 bytes long")
+
+    if(type(board) == int):
+        board = str(board)
+
+    converted_board = [0] * 93
+
+    for i in range(81):
+        converted_board[80 - utttai_to_u3t_dict[int(i)]] = int(board[int(i)])
+
+    for i in range(9):
+        converted_board[89 - utttai_to_u3t_big(int(i))] = int(board[81 + int(i)])
+
+    converted_board[90] = int(board[90])
+
+    if int(board[91]) != 9:
+        converted_board[91] = utttai_to_u3t_big(int(board[91]))
+    else:
+        converted_board[91] = 9
+    converted_board[92] = int(board[92])
+
+    if return_type == 'str':
+        return ''.join([str(i) for i in converted_board])
+
+    return array_to_int(converted_board)
+
+def array_to_int(array_like: bytearray or list) -> int:
+    """
+    Converts a byte array to an int
+
+    Args:
+        byte_array: the byte array
+
+    Returns:
+        the int
+    """
+    i = 0
+    num = 0
+    for val in reversed(array_like):
+        num += int(val) * (10 ** i)
+        i += 1
+    return num
