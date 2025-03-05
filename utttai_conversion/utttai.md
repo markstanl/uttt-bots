@@ -51,11 +51,11 @@ This applies the same to the indices of the superboards (big boards). Consider:
 
 ### UTTTAI Superboard
 
-![UTTTAI](/assets/utttai big.png)
+![UTTTAI](/assets/utttai_big.png)
 
 ### U3T Superboard
 
-![U3T](/assets/num big.png)
+![U3T](/assets/num_big.png)
 
 UTTTAI definitely employs some non-conventional practices, but it creates a darn good AI model. So we will be fixing up
 the dataset to follow some more traditional conventions.
