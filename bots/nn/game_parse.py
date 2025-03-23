@@ -1,6 +1,8 @@
+import torch
+
 from ultimate_tic_tac_toe import Move, Player, Outcome
 from ultimate_tic_tac_toe.game import Game
-import torch
+
 
 def game_parse(game: Game) -> torch.Tensor:
     """
@@ -31,6 +33,34 @@ def game_parse(game: Game) -> torch.Tensor:
     else:
         valid_moves_layer = torch.tensor([[1 if Move(i + j*9, Player.O) in legal_moves else 0 for i in range(9)] for j in reversed(range(9))])
     return torch.stack([x_layer, o_layer, turn_layer, valid_moves_layer])
+
+
+def byte_parse(byte_array: str) -> torch.Tensor:
+    """
+    Converts the string version of the byte array into a tensor for the neural
+    network to use, based on the specifications from the paper:
+        AI AGENTS FOR ULTIMATE TIC-TAC-TOE
+        PHIL CHEN, JESSE DOAN, EDWARD XU
+
+    Args:
+        byte_array: the string version of the byte array
+
+    Returns:
+        torch.Tensor: the tensor representing the game state (9 x 9 x 4)
+    """
+    x_layer = []
+    o_layer = []
+    turn_layer = []
+    valid_moves_layer = []
+
+    for i in range(81):
+        pass
+
+    for i in range(81, 89):
+        pass
+
+
+    return None
 
 if __name__ == '__main__':
     generated_move_order = ['F1', 'H2', 'E4', 'E3', 'F8', 'H6', 'E9', 'D7',

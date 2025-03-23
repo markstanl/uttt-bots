@@ -18,7 +18,7 @@ def load_utttai(byte_array: bytearray):
         byte_array: the UTTTAI bytearray
 
     Returns:
-
+        the UTTT game
     """
     game = Game()
 

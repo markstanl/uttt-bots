@@ -85,3 +85,12 @@ byte_array = / "subgames" (small board) / "supergames" (big board) / current pla
 The subgames and supergames byte array now follows the u3t convention, as shown in the images above, with the lsb 
 matching to the lowest index. The constraint byte also follows the big board index convention of u3t. The result and
 current player bytes remain the same. 
+
+### UTTTAI Justification
+
+I have likely been a little harsh in my analysis of UTTTAI's indexing. Though it is unconventional for chess, there is a
+good justification for it for U3T specifically. Having all subgames in a single row allows for a more easily understood
+tic-tac-toe mask arrays (this is how the bot knows if there has been a tic tac toe in a subgame). This is absolutely 
+one of the downsides of the conventional bitboards for chess, as the mask arrays are significantly less intuitive.
+Furthermore, there is great value in using bytearrays as opposed to bitboards, as it is easy to see the entire data 
+of a game stored in a single array.
