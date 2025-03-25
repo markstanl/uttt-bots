@@ -2,7 +2,9 @@
 .venv/*
 data/hugging_face/data/*
 sloth_data/*
+sloth_data/
 sloth_models/*
+sloth_models/
 *.parquet
 *.csv
 *.pth
