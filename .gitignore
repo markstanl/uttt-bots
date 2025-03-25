@@ -3,3 +3,6 @@
 data/hugging_face/data/*
 sloth_data/*
 sloth_models/*
+*.parquet
+*.csv
+*.pth
